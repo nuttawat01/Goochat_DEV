@@ -728,12 +728,12 @@ function generateUUID() {
 // OA send message endpoint
 app.post('/api/oa/chat/send', async (req, res) => {
     try {
-        const { sessionId, contentType, content, media } = req.body;
+        const { sessionId, contentType, content, media, oaId } = req.body;
         
-        if (!sessionId) {
+        if (!sessionId || !oaId) {
             return res.status(400).json({
                 statusCode: "400",
-                message: "SessionId is required",
+                message: "SessionId and oaId are required",
                 code: "4001"
             });
         }
@@ -741,6 +741,7 @@ app.post('/api/oa/chat/send', async (req, res) => {
         // สร้าง payload สำหรับส่งข้อความ
         const messagePayload = {
             sessionId,
+            oaId,  // เพิ่ม oaId ในการส่งข้อความ
             referenceKey: crypto.randomUUID(),
             contentType: contentType || "TEXT",
             content: content || "",
@@ -778,8 +779,7 @@ app.post('/api/oa/chat/send', async (req, res) => {
         );
 
         // อัพเดท session timestamp
-        const oaId = req.body.oaId;
-        if (oaId && oaSessions.has(oaId)) {
+        if (oaSessions.has(oaId)) {
             const sessionData = oaSessions.get(oaId);
             sessionData.lastMessageTime = new Date();
             sessionData.lastStatus = response.data.statusCode;
@@ -795,7 +795,6 @@ app.post('/api/oa/chat/send', async (req, res) => {
             headers: error.response?.headers
         });
 
-        // ส่ง error response ที่มีรายละเอียดมากขึ้น
         res.status(error.response?.status || 500).json({
             statusCode: error.response?.data?.statusCode || "500",
             message: error.response?.data?.message || error.message || 'Failed to send OA message',

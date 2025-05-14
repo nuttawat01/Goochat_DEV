@@ -1886,26 +1886,21 @@
         </div>
     </div>
 
-    <!-- แก้ไข Modal สำหรับส่งข้อความหา OA -->
-    <div id="oaSendModal" class="oa-modal">
-        <div class="oa-modal-content">
-            <div class="oa-modal-header">
-                <h3>จัดการ OA</h3>
-                <span class="oa-close" onclick="closeOAModal()">&times;</span>
+    <!-- Modal for OA message -->
+    <div id="oaSendModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>ส่งข้อความหา OA</h3>
+                <button class="close-modal" onclick="closeOAModal()">&times;</button>
             </div>
-            <div class="oa-modal-body">
-                <!-- เพิ่มส่วนสร้าง OA -->
+            <div class="modal-body">
                 <div class="form-section">
-                    <h4>สร้าง OA ใหม่</h4>
+                    <h4>ข้อมูล OA</h4>
                     <div class="form-group">
-                        <label for="accountName">ชื่อบัญชี:</label>
-                        <input type="text" id="accountName" class="form-input" placeholder="กรอกชื่อบัญชี">
+                        <label>ชื่อบัญชี:</label>
+                        <input type="text" id="accountName" class="form-input" placeholder="กรอกชื่อบัญชี OA">
                     </div>
                 </div>
-
-                <hr class="section-divider">
-
-                <!-- ส่วนส่งข้อความ -->
                 <div class="form-section">
                     <h4>ตั้งค่าการส่งข้อความ</h4>
                     <div class="form-group">
@@ -1922,14 +1917,6 @@
                         <label>จำนวนข้อความ:</label>
                         <input type="number" id="messageCount" class="form-input" min="1" value="1">
                     </div>
-                    <div class="form-group">
-                        <label>ผู้ส่งข้อความ:</label>
-                        <select id="senderType" class="form-input">
-                            <option value="OA">OA</option>
-                            <option value="MEMBER">สมาชิก</option>
-                            <option value="ALTERNATE">สลับ OA/สมาชิก</option>
-                        </select>
-                    </div>
                     <div id="textMessageInput" class="form-group">
                         <label>ข้อความ:</label>
                         <textarea id="messageContent" class="form-input" rows="4" placeholder="พิมพ์ข้อความ..."></textarea>
@@ -1940,29 +1927,112 @@
                     </div>
                 </div>
             </div>
-            <div class="oa-modal-footer">
-                <button onclick="createAndSendOA()" class="action-btn create">สร้าง OA และส่งข้อความ</button>
-                <button onclick="closeOAModal()" class="secondary-btn">ปิด</button>
+            <div class="modal-footer">
+                <button onclick="closeOAModal()" class="cancel-btn">ยกเลิก</button>
+                <button onclick="createAndSendOA()" class="send-btn">สร้าง OA และส่งข้อความ</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <style>
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .toast.success {
+            background-color: #28a745;
+        }
+
+        .toast.error {
+            background-color: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+
     <script>
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
         // API Base URL
         const API_BASE_URL = 'http://localhost:3000';
 
         // เพิ่มฟังก์ชัน createAndSendOA
         async function createAndSendOA() {
-            // ตรวจสอบ token ของ user
-            const userToken = localStorage.getItem('accessToken');
-            if (!userToken) {
-                showToast('กรุณาเข้าสู่ระบบก่อน', 'error');
-                window.location.href = 'index.html';
-                return;
-            }
-
             try {
-                // Sign in first to get token for OA
+                // ตรวจสอบข้อมูลที่จำเป็น
+                const accountName = document.getElementById('accountName').value.trim();
+                const messageType = document.getElementById('messageType').value;
+                const messageContent = document.getElementById('messageContent').value.trim();
+                const mediaUrl = document.getElementById('mediaUrl').value.trim();
+
+                if (!accountName) {
+                    showToast('กรุณากรอกชื่อบัญชี OA', 'error');
+                    return;
+                }
+
+                if (messageType === 'TEXT' && !messageContent) {
+                    showToast('กรุณากรอกข้อความ', 'error');
+                    return;
+                }
+
+                if (messageType !== 'TEXT' && !mediaUrl) {
+                    showToast('กรุณากรอก URL มีเดีย', 'error');
+                    return;
+                }
+
+                // Sign in first to get token for OA operations
                 const signInResponse = await fetch(`${API_BASE_URL}/api/auth/email/signin`, {
                     method: 'POST',
                     headers: {
@@ -1980,21 +2050,17 @@
                 });
 
                 const signInData = await signInResponse.json();
+                console.log('Sign in response:', signInData);
+
                 if (signInData.statusCode !== "200") {
-                    showToast('เข้าสู่ระบบไม่สำเร็จ', 'error');
+                    showToast(`เข้าสู่ระบบไม่สำเร็จ: ${signInData.message}`, 'error');
                     return;
                 }
 
-                // เก็บ token จาก response สำหรับสร้าง OA
+                // เก็บ token จาก response สำหรับ OA operations
                 const oaAccessToken = signInData.data.accessToken;
                 if (!oaAccessToken) {
                     showToast('ไม่พบ Access Token', 'error');
-                    return;
-                }
-
-                const accountName = document.getElementById('accountName').value;
-                if (!accountName) {
-                    showToast('กรุณากรอกชื่อบัญชี', 'error');
                     return;
                 }
 
@@ -2019,8 +2085,10 @@
                 });
 
                 const createData = await createResponse.json();
+                console.log('Create OA response:', createData);
+
                 if (createData.statusCode !== "200") {
-                    showToast('สร้าง OA ไม่สำเร็จ', 'error');
+                    showToast(`สร้าง OA ไม่สำเร็จ: ${createData.message}`, 'error');
                     return;
                 }
 
@@ -2028,6 +2096,7 @@
                 showToast('สร้าง OA สำเร็จ', 'success');
 
                 // ส่ง friend request โดยใช้ token ของ user
+                const userToken = localStorage.getItem('accessToken');
                 const requestResponse = await fetch(`${API_BASE_URL}/api/official/request`, {
                     method: 'POST',
                     headers: {
@@ -2046,8 +2115,10 @@
                 });
 
                 const requestData = await requestResponse.json();
+                console.log('Friend request response:', requestData);
+
                 if (requestData.statusCode !== "200") {
-                    showToast('ส่ง friend request ไม่สำเร็จ', 'error');
+                    showToast(`ส่ง friend request ไม่สำเร็จ: ${requestData.message}`, 'error');
                     return;
                 }
 
@@ -2057,7 +2128,7 @@
                     gochatId: requestData.data.userProfile.gochatId,
                     displayName: requestData.data.userProfile.displayName,
                     sessionId: requestData.data.room.sessionId,
-                    oaToken: requestData.data.userProfile.oaToken,
+                    oaToken: oaAccessToken, // ใช้ token จาก signin
                     companyName: requestData.data.userProfile.oaDetails.companyName,
                     createdTime: requestData.data.userProfile.createdTime
                 };
@@ -2066,8 +2137,8 @@
                 await sendOAMessage(oaData);
 
             } catch (error) {
-                console.error('Error:', error);
-                showToast('เกิดข้อผิดพลาด', 'error');
+                console.error('Error in createAndSendOA:', error);
+                showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
             }
         }
 
@@ -2087,6 +2158,7 @@
                 for (let i = 0; i < messageCount; i++) {
                     const payload = {
                         sessionId: oaData.sessionId,
+                        oaId: oaData.id, // เพิ่ม oaId
                         referenceKey: crypto.randomUUID(),
                         contentType: messageType,
                         content: messageContent,
@@ -2106,7 +2178,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${oaData.oaToken}`,
+                            'Authorization': `Bearer ${oaData.oaToken}`, // ใช้ token จาก signin
                             'App-Version': '1.9.0',
                             'Os-Version': '12.0',
                             'Accept-Language': 'en',
@@ -2121,21 +2193,13 @@
                         showToast(`ส่งข้อความไม่สำเร็จ: ${data.message}`, 'error');
                         return;
                     }
-
-                    // รอ 1 วินาทีก่อนส่งข้อความถัดไป
-                    if (i < messageCount - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
                 }
 
                 showToast('ส่งข้อความสำเร็จ', 'success');
                 closeOAModal();
-                
-                // Refresh room list
-                await refreshRooms();
             } catch (error) {
-                console.error('Error sending OA message:', error);
-                showToast('เกิดข้อผิดพลาดในการส่งข้อความ', 'error');
+                console.error('Error in sendOAMessage:', error);
+                showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
             }
         }
 
@@ -4185,6 +4249,47 @@ Response: ${JSON.stringify(log.response || log.error, null, 2)}
             window.addEventListener('DOMContentLoaded', initApp);
         } else {
             initApp();
+        }
+
+        // แสดง Modal สำหรับส่งข้อความหา OA
+        function showOASendModal() {
+            const modal = document.getElementById('oaSendModal');
+            if (modal) {
+                // รีเซ็ตฟอร์ม
+                document.getElementById('accountName').value = '';
+                document.getElementById('messageType').value = 'TEXT';
+                document.getElementById('messageContent').value = '';
+                document.getElementById('mediaUrl').value = '';
+                document.getElementById('messageCount').value = '1';
+                
+                // แสดง/ซ่อนฟิลด์ตามประเภทข้อความ
+                handleMessageTypeChange();
+                
+                modal.style.display = 'flex';
+            }
+        }
+
+        // ปิด Modal ส่งข้อความหา OA
+        function closeOAModal() {
+            const modal = document.getElementById('oaSendModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // จัดการการเปลี่ยนประเภทข้อความ
+        function handleMessageTypeChange() {
+            const messageType = document.getElementById('messageType').value;
+            const textInput = document.getElementById('textMessageInput');
+            const mediaInput = document.getElementById('mediaMessageInput');
+            
+            if (messageType === 'TEXT') {
+                textInput.style.display = 'block';
+                mediaInput.style.display = 'none';
+            } else {
+                textInput.style.display = 'block';
+                mediaInput.style.display = 'block';
+            }
         }
     </script>
 </body>
