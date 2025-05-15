@@ -2875,7 +2875,7 @@
                             }
 
                             // Wait before next request
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await new Promise(resolve => setTimeout(resolve, 0));
                         }
                         return;
 
@@ -2912,7 +2912,7 @@
                 const data = await response.json();
                 console.log(`Message sent response:`, data);
                 
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 0));
                 
                 if (type === 'NOTE') {
                     if (data?.statusCode === "200") {
@@ -3067,7 +3067,7 @@
                                 updateProgressModal(progress, totalMessages);
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                    await new Promise(resolve => setTimeout(resolve, 0));
                                 }
                                 messageCounter++;
                             } catch (error) {
@@ -3096,7 +3096,7 @@
                             messageCounter++;
 
                             if (useMessageDelay) {
-                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                await new Promise(resolve => setTimeout(resolve, 0));
                             }
                         }
                     }
@@ -3137,7 +3137,7 @@
                                 }
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                    await new Promise(resolve => setTimeout(resolve, 0));
                                 }
                             } catch (error) {
                                 console.error('Error pinning message:', error);
@@ -3185,7 +3185,7 @@
                                 }
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                    await new Promise(resolve => setTimeout(resolve, 0));
                                 }
                             } catch (error) {
                                 console.error('Error replying to message:', error);
@@ -3576,7 +3576,7 @@
                         progressText.textContent = `${Math.round(percent)}%`;
 
                         // Add small delay between operations
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, 0));
                     }
 
                     // เก็บข้อมูลสมาชิกไว้
@@ -3676,7 +3676,7 @@
                                             updateProgressModal(progress, totalMessages);
                                             
                                             if (useMessageDelay) {
-                                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                                await new Promise(resolve => setTimeout(resolve, 0));
                                             }
                                             messageCounter++;
                                         } else {
@@ -3701,7 +3701,7 @@
                                             messageCounter++;
 
                                             if (useMessageDelay) {
-                                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                                await new Promise(resolve => setTimeout(resolve, 0));
                                             }
                                         }
                                     }
@@ -3735,7 +3735,7 @@
                                                 console.log('Pin response:', pinData);
                                                 
                                                 if (useMessageDelay) {
-                                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                                    await new Promise(resolve => setTimeout(resolve, 0));
                                                 }
                                             } catch (error) {
                                                 console.error('Error pinning message:', error);
@@ -3777,7 +3777,7 @@
                                                 console.log('Reply response:', replyData);
                                                 
                                                 if (useMessageDelay) {
-                                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                                    await new Promise(resolve => setTimeout(resolve, 0));
                                                 }
                                             } catch (error) {
                                                 console.error('Error replying to message:', error);
@@ -4125,7 +4125,7 @@
 
                         // Wait a bit between drafts
                         if (i < selectedDrafts.length - 1) {
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            await new Promise(resolve => setTimeout(resolve, 0));
                         }
                     }
 
