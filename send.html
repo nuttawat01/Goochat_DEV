@@ -1931,6 +1931,12 @@
                         <label>จำนวนข้อความ:</label>
                         <input type="number" id="messageCount" class="form-input" min="1" value="1">
                     </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="sendBackToOA">
+                            ส่งข้อความกลับไปหา OA
+                        </label>
+                    </div>
                     <input type="hidden" id="messageContent">
                     <input type="hidden" id="mediaUrl">
                 </div>
@@ -2147,6 +2153,7 @@
             try {
                 const messageType = document.getElementById('messageType').value;
                 const messageCount = parseInt(document.getElementById('messageCount').value) || 1;
+                const sendBackToOA = document.getElementById('sendBackToOA').checked;
                 const messageContent = document.getElementById('messageContent').value;
                 const mediaUrl = document.getElementById('mediaUrl').value;
 
@@ -2166,7 +2173,6 @@
                     IMAGE: (counter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        
                         return {
                             sessionId: oaData.sessionId,
                             referenceKey: crypto.randomUUID(),
@@ -2196,7 +2202,6 @@
                     VIDEO: (counter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        
                         return {
                             sessionId: oaData.sessionId,
                             referenceKey: crypto.randomUUID(),
@@ -2229,11 +2234,9 @@
                     MEDIA: (counter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        // VIDEO expDate (+7 วัน)
                         const expDate = new Date();
                         expDate.setDate(expDate.getDate() + 7);
                         const expTimestamp = expDate.getTime() * 1000000;
-                        // สร้าง originalContentUrl แบบสุ่มเหมือนตัวอย่าง
                         const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
                         const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
                         return {
@@ -2285,12 +2288,9 @@
                     FILE: (counter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        
-                        // Calculate expDate (+7 days)
                         const expDate = new Date();
                         expDate.setDate(expDate.getDate() + 7);
                         const expTimestamp = expDate.getTime() * 1000000;
-                        
                         return {
                             sessionId: oaData.sessionId,
                             referenceKey: crypto.randomUUID(),
@@ -2321,46 +2321,78 @@
                 };
 
                 const typeList = ['TEXT', 'IMAGE', 'VIDEO', 'MEDIA', 'FILE'];
-                for (let i = 1; i <= messageCount; i++) {
+                let failedMessages = [];
+                showProgressModal(0, messageCount);
+
+                for (let counter = 1; counter <= messageCount; counter++) {
                     let typeToSend = messageType;
                     if (messageType === 'ALL') {
-                        typeToSend = typeList[(i - 1) % typeList.length];
+                        typeToSend = typeList[(counter - 1) % typeList.length];
                     }
                     const format = defaultFormats[typeToSend];
                     if (!format) {
                         showToast(`ไม่รองรับประเภทข้อความ ${typeToSend}`, 'error');
-                        return;
+                        continue;
                     }
-                    const payload = format(i);
-                    console.log('Sending payload:', payload);
-
-                    const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${oaData.oaToken}`,
-                            'App-Version': '1.9.0',
-                            'Os-Version': '12.0',
-                            'Accept-Language': 'en',
-                            'Platform': 'android',
-                            'Device-Id': crypto.randomUUID()
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const data = await response.json();
-                    console.log(`Message ${i} response:`, data);
-
-                    if (data.statusCode !== "200") {
-                        showToast(`ส่งข้อความที่ ${i} ไม่สำเร็จ: ${data.message}`, 'error');
-                        return;
+                    const payload = format(counter);
+                    try {
+                        // OA ยิงหาเรา
+                        const response = await fetch(`${API_BASE_URL}/api/oa/chat/send`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${oaData.oaToken}`,
+                                'App-Version': '1.9.0',
+                                'Os-Version': '12.0',
+                                'Accept-Language': 'en',
+                                'Platform': 'android',
+                                'Device-Id': crypto.randomUUID()
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await response.json();
+                        if (data.statusCode !== "200") {
+                            failedMessages.push(`OA ส่งข้อความที่ ${counter} ไม่สำเร็จ: ${data.message}`);
+                        }
+                    } catch (error) {
+                        failedMessages.push(`OA ส่งข้อความที่ ${counter} เกิดข้อผิดพลาด: ${error.message}`);
                     }
 
-                    // อัพเดท progress
-                    updateProgress(i, messageCount);
+                    // เรายิงกลับหา OA (ถ้าเลือก)
+                    if (sendBackToOA) {
+                        let backPayload = { ...payload, content: `[กลับหา OA] ${typeToSend} message ${counter}` };
+                        const userToken = localStorage.getItem('accessToken');
+                        try {
+                            const backResponse = await fetch(`${API_BASE_URL}/api/chat/send`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${userToken}`,
+                                    'App-Version': '1.9.0',
+                                    'Os-Version': '12.0',
+                                    'Accept-Language': 'en',
+                                    'Platform': 'android',
+                                    'Device-Id': crypto.randomUUID()
+                                },
+                                body: JSON.stringify(backPayload)
+                            });
+                            const backData = await backResponse.json();
+                            if (backData.statusCode !== "200") {
+                                failedMessages.push(`เราส่งข้อความกลับที่ ${counter} ไม่สำเร็จ: ${backData.message}`);
+                            }
+                        } catch (error) {
+                            failedMessages.push(`เราส่งข้อความกลับที่ ${counter} เกิดข้อผิดพลาด: ${error.message}`);
+                        }
+                    }
+
+                    updateProgress(counter, messageCount);
                 }
 
-                showToast('ส่งข้อความทั้งหมดสำเร็จ', 'success');
+                if (failedMessages.length > 0) {
+                    showToast(`ส่งข้อความเสร็จสิ้น แต่มีข้อผิดพลาด ${failedMessages.length} รายการ:\n${failedMessages.join('\n')}`, 'warning');
+                } else {
+                    showToast('ส่งข้อความทั้งหมดสำเร็จ', 'success');
+                }
                 hideProgressModal();
                 closeOAModal();
 

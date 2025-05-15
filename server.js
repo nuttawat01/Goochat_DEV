@@ -38,7 +38,8 @@ app.post('/api/rooms', async (req, res) => {
                 'Os-Version': req.headers['os-version'] || '12.0',
                 'Accept-Language': req.headers['accept-language'] || 'en',
                 'Platform': req.headers['platform'] || 'android',
-                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
+                'Device-Id': req.headers['device-id'] || crypto.randomUUID(),
+                'Msg-Version': '1'
             }
         });
 
@@ -91,7 +92,8 @@ app.post('/api/auth/otp/signup/verify', async (req, res) => {
                     'Os-Version': '12.0',
                     'Accept-Language': 'en',
                     'Platform': 'android',
-                    'Device-Id': req.headers['device-id']
+                    'Device-Id': req.headers['device-id'],
+                    'Msg-Version': '1'
                 }
             }
         );
@@ -122,7 +124,8 @@ app.post('/api/profile/name', async (req, res) => {
                 'Os-Version': req.headers['os-version'],
                 'Accept-Language': req.headers['accept-language'],
                 'Platform': req.headers['platform'],
-                'Device-Id': req.headers['device-id']
+                'Device-Id': req.headers['device-id'],
+                'Msg-Version': '1'
             }
         });
         res.json(response.data);
@@ -139,11 +142,12 @@ app.post('/api/chat/send', async (req, res) => {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': req.headers.authorization,
-                'App-Version': req.headers['app-version'],
-                'Os-Version': req.headers['os-version'],
-                'Accept-Language': req.headers['accept-language'],
-                'Platform': req.headers['platform'],
-                'Device-Id': req.headers['device-id']
+                'App-Version': '1.9.0',
+                'Os-Version': '12.0',
+                'Accept-Language': 'en',
+                'Platform': 'android',
+                'Device-Id': crypto.randomUUID(),
+                'Msg-Version': '1'
             }
         });
         res.json(response.data);
@@ -186,7 +190,8 @@ app.post('/api/profile/me', async (req, res) => {
                 'Os-Version': req.headers['os-version'],
                 'Accept-Language': req.headers['accept-language'],
                 'Platform': req.headers['platform'],
-                'Device-Id': req.headers['device-id']
+                'Device-Id': req.headers['device-id'],
+                'Msg-Version': '1'
             }
         });
         res.json(response.data);
@@ -211,7 +216,8 @@ app.post('/api/chat/album/create', async (req, res) => {
                 'Os-Version': '12.0',
                 'Accept-Language': 'en',
                 'Platform': 'android',
-                'Device-Id': crypto.randomUUID()
+                'Device-Id': crypto.randomUUID(),
+                'Msg-Version': '1'
             },
             body: JSON.stringify({
                 sessionId,
@@ -250,7 +256,8 @@ app.post('/api/chat/album/update', async (req, res) => {
                 'Os-Version': '12.0',
                 'Accept-Language': 'en',
                 'Platform': 'android',
-                'Device-Id': crypto.randomUUID()
+                'Device-Id': crypto.randomUUID(),
+                'Msg-Version': '1'
             },
             body: JSON.stringify({
                 sessionId,
@@ -287,7 +294,8 @@ app.post('/api/chat/note/create', async (req, res) => {
                 'Os-Version': '12.0',
                 'Accept-Language': 'en',
                 'Platform': 'android',
-                'Device-Id': req.headers['device-id']
+                'Device-Id': req.headers['device-id'],
+                'Msg-Version': '1'
             }
         });
 
@@ -316,7 +324,8 @@ app.post('/api/chat/pin', async (req, res) => {
                 'Os-Version': req.headers['os-version'] || '12.0',
                 'Accept-Language': req.headers['accept-language'] || 'en',
                 'Platform': req.headers['platform'] || 'android',
-                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
+                'Device-Id': req.headers['device-id'] || crypto.randomUUID(),
+                'Msg-Version': '1'
             },
             body: JSON.stringify({
                 sessionId,
@@ -349,7 +358,8 @@ app.post('/api/chat/reply', async (req, res) => {
                 'Os-Version': req.headers['os-version'] || '12.0',
                 'Accept-Language': req.headers['accept-language'] || 'en',
                 'Platform': req.headers['platform'] || 'android',
-                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
+                'Device-Id': req.headers['device-id'] || crypto.randomUUID(),
+                'Msg-Version': '1'
             },
             body: JSON.stringify({
                 replyMsgId,
@@ -398,7 +408,8 @@ app.post('/api/group/setting/create', upload.none(), async (req, res) => {
                     'Os-Version': req.headers['os-version'] || '12.0',
                     'Accept-Language': req.headers['accept-language'] || 'en',
                     'Platform': req.headers.platform || 'android',
-                    'Device-Id': req.headers['device-id']
+                    'Device-Id': req.headers['device-id'],
+                    'Msg-Version': '1'
                 },
                 maxContentLength: Infinity,
                 maxBodyLength: Infinity
@@ -430,7 +441,8 @@ app.post('/api/group/setting/create', upload.none(), async (req, res) => {
                         'Os-Version': '12.0',
                         'Accept-Language': 'en',
                         'Platform': 'android',
-                        'Device-Id': crypto.randomUUID()
+                        'Device-Id': crypto.randomUUID(),
+                        'Msg-Version': '1'
                     },
                     body: JSON.stringify({
                         packageId: "651bdffda8dfd223058ccc7e"
@@ -470,7 +482,8 @@ app.post('/api/group/join', async (req, res) => {
             'Os-Version': req.headers['os-version'],
             'Accept-Language': req.headers['accept-language'],
             'Platform': req.headers.platform,
-            'Device-Id': req.headers['device-id']
+            'Device-Id': req.headers['device-id'],
+            'Msg-Version': '1'
         };
 
         const payload = {
@@ -509,7 +522,8 @@ app.post('/api/sticker/purchase', async (req, res) => {
                 'Os-Version': req.headers['os-version'] || '12.0',
                 'Accept-Language': req.headers['accept-language'] || 'en',
                 'Platform': req.headers['platform'] || 'android',
-                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
+                'Device-Id': req.headers['device-id'] || crypto.randomUUID(),
+                'Msg-Version': '1'
             },
             body: JSON.stringify({
                 packageId: req.body.packageId
@@ -543,7 +557,8 @@ app.post('/api/auth/email/signin', async (req, res) => {
                     'Os-Version': '12.0',
                     'Accept-Language': 'en',
                     'Platform': 'android',
-                    'Device-Id': crypto.randomUUID()
+                    'Device-Id': crypto.randomUUID(),
+                    'Msg-Version': '1'
                 }
             }
         );
@@ -600,7 +615,8 @@ app.post('/api/oa/create', async (req, res) => {
                     'Os-Version': '17.3.1',
                     'Accept-Language': 'en',
                     'Platform': 'Desktop-App',
-                    'Device-Id': '349fb28d-3118-4b7a-bb7c-2e9cb8113ad9'
+                    'Device-Id': '349fb28d-3118-4b7a-bb7c-2e9cb8113ad9',
+                    'Msg-Version': '1'
                 }
             }
         );
@@ -639,7 +655,8 @@ app.post('/api/contact/friend/request', async (req, res) => {
                     'Os-Version': '12.0',
                     'Accept-Language': 'en',
                     'Platform': 'android',
-                    'Device-Id': crypto.randomUUID()
+                    'Device-Id': crypto.randomUUID(),
+                    'Msg-Version': '1'
                 }
             }
         );
@@ -805,15 +822,16 @@ app.post('/api/oa/chat/send', async (req, res) => {
         console.log('Sending OA message payload:', JSON.stringify(messagePayload, null, 2));
 
         // Send the message
-        const response = await axios.post('https://sit.apigoochat.net/gochat/v1/chat/send', messagePayload, {
+        const response = await axios.post('https://sit.apigoochat.net/gochat/v1/oa/chat/send', messagePayload, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': req.headers.authorization,
-                'App-Version': req.headers['app-version'] || '1.9.0',
-                'Os-Version': req.headers['os-version'] || '12.0',
-                'Accept-Language': req.headers['accept-language'] || 'en',
-                'Platform': req.headers['platform'] || 'android',
-                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
+                'App-Version': '1.9.0',
+                'Os-Version': '12.0',
+                'Accept-Language': 'en',
+                'Platform': 'android',
+                'Device-Id': crypto.randomUUID(),
+                'Msg-Version': '1'
             }
         });
 
@@ -859,7 +877,8 @@ app.post('/api/official/request', async (req, res) => {
                     'Os-Version': '12.0',
                     'Accept-Language': 'en',
                     'Platform': 'android',
-                    'Device-Id': crypto.randomUUID()
+                    'Device-Id': crypto.randomUUID(),
+                    'Msg-Version': '1'
                 }
             }
         );
