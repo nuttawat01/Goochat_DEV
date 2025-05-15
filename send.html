@@ -2014,21 +2014,9 @@
                 // ตรวจสอบข้อมูลที่จำเป็น
                 const accountName = document.getElementById('accountName').value.trim();
                 const messageType = document.getElementById('messageType').value;
-                const messageContent = document.getElementById('messageContent').value.trim();
-                const mediaUrl = document.getElementById('mediaUrl').value.trim();
 
                 if (!accountName) {
                     showToast('กรุณากรอกชื่อบัญชี OA', 'error');
-                    return;
-                }
-
-                if (messageType === 'TEXT' && !messageContent) {
-                    showToast('กรุณากรอกข้อความ', 'error');
-                    return;
-                }
-
-                if (messageType !== 'TEXT' && !mediaUrl) {
-                    showToast('กรุณากรอก URL มีเดีย', 'error');
                     return;
                 }
 
@@ -2128,10 +2116,14 @@
                     gochatId: requestData.data.userProfile.gochatId,
                     displayName: requestData.data.userProfile.displayName,
                     sessionId: requestData.data.room.sessionId,
-                    oaToken: oaAccessToken, // ใช้ token จาก signin
+                    oaToken: oaAccessToken,
                     companyName: requestData.data.userProfile.oaDetails.companyName,
                     createdTime: requestData.data.userProfile.createdTime
                 };
+
+                // แสดง Modal ความคืบหน้า
+                const messageCount = parseInt(document.getElementById('messageCount').value) || 1;
+                showProgressModal(0, messageCount);
 
                 // ส่งข้อความ
                 await sendOAMessage(oaData);
@@ -2146,39 +2138,160 @@
         async function sendOAMessage(oaData) {
             try {
                 const messageType = document.getElementById('messageType').value;
-                const messageContent = document.getElementById('messageContent').value;
-                const mediaUrl = document.getElementById('mediaUrl').value;
                 const messageCount = parseInt(document.getElementById('messageCount').value) || 1;
 
-                if (!messageContent && !mediaUrl) {
-                    showToast('กรุณากรอกข้อความหรือ URL มีเดีย', 'error');
-                    return;
-                }
+                // กำหนด default media URL และ payload format สำหรับแต่ละประเภท
+                const defaultFormats = {
+                    TEXT: (counter) => ({
+                        content: `Text message ${counter}`,
+                        contentType: 'TEXT',
+                        messageTimestamp: Date.now() * 1000
+                    }),
+                    IMAGE: (counter) => {
+                        const imageId = crypto.randomUUID();
+                        const mediaRefKey = crypto.randomUUID();
+                        const timestamp = Date.now() * 1000;
+                        const createdTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                        return {
+                            content: "",
+                            contentType: 'IMAGE',
+                            media: [{
+                                uploadId: "",
+                                id: imageId,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
+                                imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
+                                type: 'IMAGE',
+                                mediaRefKey: crypto.randomUUID(),
+                                width: 600,
+                                height: 400,
+                                cancelMedia: false,
+                                indexMedia: 0,
+                                timeStamp: imageTimestamp,
+                                messageTimestamp: imageTimestamp
+                            }]
+                        };
+                    },
+                    VIDEO: (counter) => {
+                        const videoId = crypto.randomUUID();
+                        const videoTimestamp = Date.now() * 1000;
+                        return {
+                            content: `Video ${counter}`,
+                            contentType: 'VIDEO',
+                            messageTimestamp: videoTimestamp,
+                            media: [{
+                                id: videoId,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
+                                imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
+                                originalContentUrl: 'https://example.com/sample-video.mp4',
+                                type: 'VIDEO',
+                                mediaRefKey: crypto.randomUUID(),
+                                width: 600,
+                                height: 400,
+                                cancelMedia: false,
+                                indexMedia: 0,
+                                duration: 30,
+                                timeStamp: videoTimestamp,
+                                messageTimestamp: videoTimestamp
+                            }]
+                        };
+                    },
+                    MEDIA: (counter) => {
+                        const mediaTimestamp = Date.now() * 1000;
+                        return {
+                            content: `Media ${counter}`,
+                            contentType: 'MEDIA',
+                            messageTimestamp: mediaTimestamp,
+                            media: [
+                                {
+                                    id: crypto.randomUUID(),
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
+                                    imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
+                                    originalContentUrl: "https://example.com/sample-video.mp4",
+                                    type: "VIDEO",
+                                    mediaRefKey: crypto.randomUUID(),
+                                    width: 600,
+                                    height: 400,
+                                    cancelMedia: false,
+                                    indexMedia: 0,
+                                    duration: 30,
+                                    timeStamp: mediaTimestamp,
+                                    messageTimestamp: mediaTimestamp
+                                },
+                                {
+                                    id: crypto.randomUUID(),
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
+                                    imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
+                                    type: "IMAGE",
+                                    mediaRefKey: crypto.randomUUID(),
+                                    width: 600,
+                                    height: 400,
+                                    cancelMedia: false,
+                                    indexMedia: 1,
+                                    timeStamp: mediaTimestamp,
+                                    messageTimestamp: mediaTimestamp
+                                }
+                            ]
+                        };
+                    },
+                    FILE: (counter) => {
+                        const fileId = crypto.randomUUID();
+                        const currentResult = convertDateToMicroTimestamp();
+                        const fileTimestamp = currentResult.microTimestamp;
+                        const expDate = new Date(currentResult.date);
+                        expDate.setDate(expDate.getDate() + 7);
+                        const expResult = convertDateToMicroTimestamp(expDate);
+
+                        return {
+                            content: `File ${counter}`,
+                            contentType: 'FILE',
+                            messageTimestamp: fileTimestamp,
+                            media: [{
+                                id: fileId,
+                                fileName: `file_${counter}.pdf`,
+                                fileSize: 1024,
+                                fileSource: 'https://example.com/sample.pdf',
+                                fileExtension: '.pdf',
+                                type: 'FILE',
+                                mediaRefKey: crypto.randomUUID(),
+                                timeStamp: fileTimestamp,
+                                expDate: expResult.microTimestamp,
+                                messageTimestamp: fileTimestamp,
+                                isDelete: false,
+                                cancelMedia: false,
+                                indexMedia: 0
+                            }]
+                        };
+                    }
+                };
 
                 for (let i = 0; i < messageCount; i++) {
+                    // สร้าง payload ตามประเภทข้อความ
+                    const messageFormat = defaultFormats[messageType](i + 1);
+                    
                     const payload = {
                         sessionId: oaData.sessionId,
-                        oaId: oaData.id, // เพิ่ม oaId
+                        oaId: oaData.id,
                         referenceKey: crypto.randomUUID(),
-                        contentType: messageType,
-                        content: messageContent,
-                        destructTime: 0
+                        contentType: messageFormat.contentType,
+                        content: messageFormat.content,
+                        destructTime: 0,
+                        messageTimestamp: messageFormat.messageTimestamp
                     };
 
-                    // เพิ่ม media ถ้าเป็นประเภท IMAGE, VIDEO, MEDIA, หรือ FILE
-                    if (messageType !== 'TEXT' && mediaUrl) {
-                        payload.media = [{
-                            type: messageType,
-                            url: mediaUrl,
-                            name: `media_${Date.now()}`
-                        }];
+                    // เพิ่ม media ถ้ามี
+                    if (messageFormat.media) {
+                        payload.media = messageFormat.media;
                     }
 
                     const response = await fetch(`${API_BASE_URL}/api/oa/chat/send`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${oaData.oaToken}`, // ใช้ token จาก signin
+                            'Authorization': `Bearer ${oaData.oaToken}`,
                             'App-Version': '1.9.0',
                             'Os-Version': '12.0',
                             'Accept-Language': 'en',
@@ -2193,6 +2306,9 @@
                         showToast(`ส่งข้อความไม่สำเร็จ: ${data.message}`, 'error');
                         return;
                     }
+
+                    // อัพเดตความคืบหน้า
+                    updateProgressModal(i + 1, messageCount);
                 }
 
                 showToast('ส่งข้อความสำเร็จ', 'success');
@@ -2359,42 +2475,35 @@
         }
 
         function showProgressModal(progress, total) {
-            const progressModal = document.createElement('div');
-            progressModal.id = 'progressModal';
-            progressModal.className = 'modal-overlay';
-            progressModal.style.display = 'flex';
-            progressModal.innerHTML = `
-                <div class="modal" style="max-width: 400px;">
-                    <div class="modal-header">
-                        <h3>กำลังส่งข้อความ</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="progress-container" style="display: block; margin-bottom: 15px;">
-                            <div class="progress-bar" style="background-color: #f0f2f5; border-radius: 4px; height: 20px; overflow: hidden;">
-                                <div class="progress-fill" id="batchProgressFill" style="background-color: #1877f2; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-                            </div>
-                            <div class="progress-text" id="batchProgressText" style="text-align: center; margin-top: 8px; color: var(--text-secondary);">0%</div>
+            let modal = document.getElementById('progressModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'progressModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content progress-modal">
+                        <h2>กำลังส่งข้อความ</h2>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progressBar"></div>
                         </div>
-                        <div style="margin-top: 10px;">
-                            <div id="batchCurrentStatus" style="text-align: center; color: var(--text-secondary);">
-                                ส่งแล้ว: 0/${total} ข้อความ
-                            </div>
-                        </div>
+                        <div class="progress-text" id="progressText"></div>
                     </div>
-                </div>
-            `;
-            document.body.appendChild(progressModal);
+                `;
+                document.body.appendChild(modal);
+            }
+            modal.style.display = 'flex';
+            updateProgressModal(progress, total);
         }
 
+        // อัพเดตความคืบหน้าใน Modal
         function updateProgressModal(progress, total) {
-            const progressFill = document.getElementById('batchProgressFill');
-            const progressText = document.getElementById('batchProgressText');
-            const currentStatus = document.getElementById('batchCurrentStatus');
-            
-            const percentage = Math.round((progress / total) * 100);
-            progressFill.style.width = `${percentage}%`;
-            progressText.textContent = `${percentage}%`;
-            currentStatus.textContent = `ส่งแล้ว: ${progress}/${total} ข้อความ`;
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            if (progressBar && progressText) {
+                const percentage = (progress / total) * 100;
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = `${progress} / ${total}`;
+            }
         }
 
         function hideProgressModal() {
@@ -2410,8 +2519,8 @@
             let microTimestamp = millisTimestamp * 1000;
             const randomDigits = Math.floor(Math.random() * 1000);
             microTimestamp = microTimestamp * 1000 + randomDigits;
-            
-            return {
+                        
+                        return {
                 date: date,
                 formatted: `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`,
                 microTimestamp: microTimestamp
@@ -2522,7 +2631,7 @@
                             messageTimestamp: mediaTimestamp,
                             media: [
                                 {
-                                    id: crypto.randomUUID(),
+                                id: crypto.randomUUID(),
                                     imageSource: `https://dummyimage.com/600x400/000/fff&text=${counterMessage}`,
                                     imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counterMessage}`,
                                     imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counterMessage}`,
@@ -2532,7 +2641,7 @@
                                     width: 600,
                                     height: 400,
                                     cancelMedia: false,
-                                    indexMedia: 0,
+                                indexMedia: 0,
                                     duration: 30,
                                     timeStamp: mediaTimestamp,
                                     messageTimestamp: mediaTimestamp
@@ -4283,13 +4392,9 @@ Response: ${JSON.stringify(log.response || log.error, null, 2)}
             const textInput = document.getElementById('textMessageInput');
             const mediaInput = document.getElementById('mediaMessageInput');
             
-            if (messageType === 'TEXT') {
-                textInput.style.display = 'block';
-                mediaInput.style.display = 'none';
-            } else {
-                textInput.style.display = 'block';
-                mediaInput.style.display = 'block';
-            }
+            // ซ่อนทั้งช่องข้อความและช่อง media เพราะใช้ค่า default ทั้งหมด
+            textInput.style.display = 'none';
+            mediaInput.style.display = 'none';
         }
     </script>
 </body>
