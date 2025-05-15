@@ -2020,7 +2020,7 @@
         }
 
         // API Base URL
-        const API_BASE_URL = 'http://localhost:3000';
+        const API_BASE_URL = 'https://goochat-dev.onrender.com';
 
         // เพิ่มฟังก์ชัน createAndSendOA
         async function createAndSendOA() {
@@ -2623,7 +2623,7 @@
                 'Device-Id': crypto.randomUUID()
             };
 
-            let endpoint = 'http://localhost:3000/api/chat/send';
+            let endpoint = 'https://goochat-dev.onrender.com/api/chat/send';
             let payload = {
                 sessionId: room.sessionId,
                 referenceKey: crypto.randomUUID()
@@ -2795,7 +2795,7 @@
                         break;
                         
                     case 'NOTE':
-                        endpoint = 'http://localhost:3000/api/chat/note/create';
+                        endpoint = 'https://goochat-dev.onrender.com/api/chat/note/create';
                         const noteTimestamp = Date.now() * 1000;
                         payload = {
                             ...payload,
@@ -2808,7 +2808,7 @@
                     case 'ALBUM':
                         const albumTimestamp = Date.now() * 1000;
                         // Create album first
-                        const createEndpoint = 'http://localhost:3000/api/chat/album/create';
+                        const createEndpoint = 'https://goochat-dev.onrender.com/api/chat/album/create';
                         const createPayload = {
                             sessionId: room.sessionId,
                             mediaCount: 1,
@@ -2837,7 +2837,7 @@
                             const referenceKey = crypto.randomUUID();
                             
                             // Call album update API
-                            const updateResponse = await fetch('http://localhost:3000/api/chat/album/update', {
+                            const updateResponse = await fetch('https://goochat-dev.onrender.com/api/chat/album/update', {
                                 method: 'POST',
                                 headers: headers,
                                 body: JSON.stringify({
@@ -3109,7 +3109,7 @@
                             try {
                                 console.log(`Attempting to pin message: ${msgToPin.messageId} with token: ${msgToPin.token.substring(0, 20)}...`);
                                 
-                                const pinResponse = await fetch('http://localhost:3000/api/chat/pin', {
+                                const pinResponse = await fetch('https://goochat-dev.onrender.com/api/chat/pin', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -3154,7 +3154,7 @@
                             try {
                                 console.log(`Attempting to reply to message: ${msgToReply.messageId} with token: ${msgToReply.token.substring(0, 20)}...`);
                                 
-                                const replyResponse = await fetch('http://localhost:3000/api/chat/reply', {
+                                const replyResponse = await fetch('https://goochat-dev.onrender.com/api/chat/reply', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -3217,7 +3217,7 @@
         // แก้ไขฟังก์ชัน fetchRooms
         async function fetchRooms(accessToken) {
             try {
-                const response = await safeFetch('http://localhost:3000/api/rooms', {
+                const response = await safeFetch('https://goochat-dev.onrender.com/api/rooms', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3440,7 +3440,7 @@
                 const formData = new FormData();
                 formData.append('groupName', groupName);
 
-                const createGroupResponse = await fetch('http://localhost:3000/api/group/setting/create', {
+                const createGroupResponse = await fetch('https://goochat-dev.onrender.com/api/group/setting/create', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${currentUserToken}`,
@@ -3480,7 +3480,7 @@
                         
                         try {
                             // Create member account
-                            const verifyResponse = await fetch('http://localhost:3000/api/auth/otp/signup/verify', {
+                            const verifyResponse = await fetch('https://goochat-dev.onrender.com/api/auth/otp/signup/verify', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -3502,7 +3502,7 @@
                                 const token = verifyData.data.accessToken;
                                 
                                 // Update member's display name
-                                await fetch('http://localhost:3000/api/profile/name', {
+                                await fetch('https://goochat-dev.onrender.com/api/profile/name', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -3519,7 +3519,7 @@
                                 });
 
                                 // Join group
-                                await fetch('http://localhost:3000/api/group/join', {
+                                await fetch('https://goochat-dev.onrender.com/api/group/join', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -3540,7 +3540,7 @@
                                 // ซื้อสติกเกอร์สำหรับสมาชิกใหม่
                                 currentOperation.textContent = `กำลังซื้อสติกเกอร์ให้สมาชิก ${i + 1}/${memberCount}`;
                                 try {
-                                    const purchaseResponse = await fetch('http://localhost:3000/api/sticker/purchase', {
+                                    const purchaseResponse = await fetch('https://goochat-dev.onrender.com/api/sticker/purchase', {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
@@ -3714,7 +3714,7 @@
                                             try {
                                                 console.log(`Attempting to pin message: ${msgToPin.messageId}`);
                                                 
-                                                const pinResponse = await fetch('http://localhost:3000/api/chat/pin', {
+                                                const pinResponse = await fetch('https://goochat-dev.onrender.com/api/chat/pin', {
                                                     method: 'POST',
                                                     headers: {
                                                         'Content-Type': 'application/json',
@@ -3753,7 +3753,7 @@
                                                 
                                                 console.log(`Attempting to reply to message: ${msgToReply.messageId}`);
                                                 
-                                                const replyResponse = await fetch('http://localhost:3000/api/chat/reply', {
+                                                const replyResponse = await fetch('https://goochat-dev.onrender.com/api/chat/reply', {
                                                     method: 'POST',
                                                     headers: {
                                                         'Content-Type': 'application/json',
