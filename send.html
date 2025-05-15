@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="GooChat - แพลตฟอร์มแชทที่ใช้งานง่ายและปลอดภัย">
     <title>GooChat - Send Messages</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Preload fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap">
+    <!-- Cache control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Error tracking -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+            return false;
+        };
+    </script>
     <style>
         :root {
             --primary-color: #1877f2;
@@ -1917,14 +1930,8 @@
                         <label>จำนวนข้อความ:</label>
                         <input type="number" id="messageCount" class="form-input" min="1" value="1">
                     </div>
-                    <div id="textMessageInput" class="form-group">
-                        <label>ข้อความ:</label>
-                        <textarea id="messageContent" class="form-input" rows="4" placeholder="พิมพ์ข้อความ..."></textarea>
-                    </div>
-                    <div id="mediaMessageInput" class="form-group" style="display: none;">
-                        <label>URL มีเดีย:</label>
-                        <input type="text" id="mediaUrl" class="form-input" placeholder="ใส่ URL มีเดีย">
-                    </div>
+                    <input type="hidden" id="messageContent">
+                    <input type="hidden" id="mediaUrl">
                 </div>
             </div>
             <div class="modal-footer">
@@ -2139,155 +2146,190 @@
             try {
                 const messageType = document.getElementById('messageType').value;
                 const messageCount = parseInt(document.getElementById('messageCount').value) || 1;
+                const messageContent = document.getElementById('messageContent').value;
+                const mediaUrl = document.getElementById('mediaUrl').value;
 
                 // กำหนด default media URL และ payload format สำหรับแต่ละประเภท
                 const defaultFormats = {
                     TEXT: (counter) => ({
-                        content: `Text message ${counter}`,
+                        sessionId: oaData.sessionId,
+                        referenceKey: crypto.randomUUID(),
                         contentType: 'TEXT',
-                        messageTimestamp: Date.now() * 1000
+                        content: `Text message ${counter}`,
+                        destructTime: 0,
+                        oaId: oaData.id,
+                        messagetimestamp: Date.now() * 1000000,
+                        createdTime: new Date().toISOString(),
+                        updatedTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
                     }),
                     IMAGE: (counter) => {
-                        const imageId = crypto.randomUUID();
-                        const mediaRefKey = crypto.randomUUID();
-                        const timestamp = Date.now() * 1000;
-                        const createdTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                        const timestamp = Date.now() * 1000000;
+                        const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                        
                         return {
-                            content: "",
-                            contentType: 'IMAGE',
+                            sessionId: oaData.sessionId,
+                            referenceKey: crypto.randomUUID(),
+                            contentType: "IMAGE",
+                            content: `Image ${counter}`,
+                            destructTime: 0,
+                            messagetimestamp: timestamp,
+                            oaId: oaData.id,
+                            createdTime: new Date().toISOString(),
+                            updatedTime: dateStr,
                             media: [{
                                 uploadId: "",
-                                id: imageId,
-                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
-                                imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
-                                type: 'IMAGE',
+                                id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
                                 width: 600,
                                 height: 400,
-                                cancelMedia: false,
-                                indexMedia: 0,
-                                timeStamp: imageTimestamp,
-                                messageTimestamp: imageTimestamp
+                                type: "IMAGE",
+                                createdTime: dateStr,
+                                timeStamp: timestamp,
+                                indexMedia: 0
                             }]
                         };
                     },
                     VIDEO: (counter) => {
-                        const videoId = crypto.randomUUID();
-                        const videoTimestamp = Date.now() * 1000;
+                        const timestamp = Date.now() * 1000000;
+                        const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                        
                         return {
+                            sessionId: oaData.sessionId,
+                            referenceKey: crypto.randomUUID(),
+                            contentType: "VIDEO",
                             content: `Video ${counter}`,
-                            contentType: 'VIDEO',
-                            messageTimestamp: videoTimestamp,
+                            destructTime: 0,
+                            messagetimestamp: timestamp,
+                            oaId: oaData.id,
+                            createdTime: new Date().toISOString(),
+                            updatedTime: dateStr,
                             media: [{
-                                id: videoId,
-                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
-                                imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
-                                originalContentUrl: 'https://example.com/sample-video.mp4',
-                                type: 'VIDEO',
+                                uploadId: "",
+                                id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
+                                videoSource: `https://example.com/video${counter}.mp4`,
+                                videoThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                duration: 30,
                                 width: 600,
                                 height: 400,
-                                cancelMedia: false,
-                                indexMedia: 0,
-                                duration: 30,
-                                timeStamp: videoTimestamp,
-                                messageTimestamp: videoTimestamp
+                                type: "VIDEO",
+                                createdTime: dateStr,
+                                timeStamp: timestamp,
+                                indexMedia: 0
                             }]
                         };
                     },
                     MEDIA: (counter) => {
-                        const mediaTimestamp = Date.now() * 1000;
+                        const timestamp = Date.now() * 1000000;
+                        const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                        // VIDEO expDate (+7 วัน)
+                        const expDate = new Date();
+                        expDate.setDate(expDate.getDate() + 7);
+                        const expTimestamp = expDate.getTime() * 1000000;
+                        // สร้าง originalContentUrl แบบสุ่มเหมือนตัวอย่าง
+                        const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+                        const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
                         return {
+                            sessionId: oaData.sessionId,
+                            referenceKey: crypto.randomUUID(),
+                            contentType: "MEDIA",
+                            status: "WAITING",
                             content: `Media ${counter}`,
-                            contentType: 'MEDIA',
-                            messageTimestamp: mediaTimestamp,
+                            destructTime: 0,
+                            messagetimestamp: timestamp,
+                            oaId: oaData.id,
+                            createdTime: new Date().toISOString(),
+                            updatedTime: dateStr,
                             media: [
                                 {
+                                    uploadId: "",
                                     id: crypto.randomUUID(),
-                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
-                                    imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
-                                    originalContentUrl: "https://example.com/sample-video.mp4",
-                                    type: "VIDEO",
                                     mediaRefKey: crypto.randomUUID(),
-                                    width: 600,
-                                    height: 400,
-                                    cancelMedia: false,
-                                    indexMedia: 0,
-                                    duration: 30,
-                                    timeStamp: mediaTimestamp,
-                                    messageTimestamp: mediaTimestamp
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    width: 225,
+                                    height: 225,
+                                    type: "IMAGE",
+                                    createdTime: dateStr,
+                                    timeStamp: timestamp + 1000000,
+                                    indexMedia: 0
                                 },
                                 {
+                                    uploadId: "",
                                     id: crypto.randomUUID(),
-                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageMedium: `https://dummyimage.com/300x200/000/fff&text=${counter}`,
-                                    imageThumbnail: `https://dummyimage.com/150x100/000/fff&text=${counter}`,
-                                    type: "IMAGE",
                                     mediaRefKey: crypto.randomUUID(),
-                                    width: 600,
-                                    height: 400,
-                                    cancelMedia: false,
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    width: 1080,
+                                    height: 1920,
+                                    type: "VIDEO",
+                                    createdTime: dateStr,
+                                    timeStamp: timestamp + 5000000,
                                     indexMedia: 1,
-                                    timeStamp: mediaTimestamp,
-                                    messageTimestamp: mediaTimestamp
+                                    expDate: expTimestamp,
+                                    duration: 13129,
+                                    originalContentUrl: `https://gochat-prod.s3.amazonaws.com/${oaData.sessionId}/${random1}/${random2}.mp4`
                                 }
                             ]
                         };
                     },
                     FILE: (counter) => {
-                        const fileId = crypto.randomUUID();
-                        const currentResult = convertDateToMicroTimestamp();
-                        const fileTimestamp = currentResult.microTimestamp;
-                        const expDate = new Date(currentResult.date);
+                        const timestamp = Date.now() * 1000000;
+                        const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                        
+                        // Calculate expDate (+7 days)
+                        const expDate = new Date();
                         expDate.setDate(expDate.getDate() + 7);
-                        const expResult = convertDateToMicroTimestamp(expDate);
-
+                        const expTimestamp = expDate.getTime() * 1000000;
+                        
                         return {
+                            sessionId: oaData.sessionId,
+                            referenceKey: crypto.randomUUID(),
+                            contentType: "FILE",
+                            status: "WAITING",
                             content: `File ${counter}`,
-                            contentType: 'FILE',
-                            messageTimestamp: fileTimestamp,
+                            destructTime: 0,
+                            messagetimestamp: timestamp,
+                            oaId: oaData.id,
+                            createdTime: new Date().toISOString(),
+                            updatedTime: dateStr,
                             media: [{
-                                id: fileId,
-                                fileName: `file_${counter}.pdf`,
-                                fileSize: 1024,
-                                fileSource: 'https://example.com/sample.pdf',
-                                fileExtension: '.pdf',
-                                type: 'FILE',
+                                uploadId: "",
+                                id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
-                                timeStamp: fileTimestamp,
-                                expDate: expResult.microTimestamp,
-                                messageTimestamp: fileTimestamp,
-                                isDelete: false,
-                                cancelMedia: false,
-                                indexMedia: 0
+                                fileSource: `https://example.com/file${counter}.pdf`,
+                                fileName: `file_${counter}.pdf`,
+                                fileExtension: ".pdf",
+                                fileSize: 110752,
+                                type: "FILE",
+                                createdTime: dateStr,
+                                timeStamp: timestamp,
+                                indexMedia: 0,
+                                expDate: expTimestamp
                             }]
                         };
                     }
                 };
 
-                for (let i = 0; i < messageCount; i++) {
-                    // สร้าง payload ตามประเภทข้อความ
-                    const messageFormat = defaultFormats[messageType](i + 1);
-                    
-                    const payload = {
-                        sessionId: oaData.sessionId,
-                        oaId: oaData.id,
-                        referenceKey: crypto.randomUUID(),
-                        contentType: messageFormat.contentType,
-                        content: messageFormat.content,
-                        destructTime: 0,
-                        messageTimestamp: messageFormat.messageTimestamp
-                    };
-
-                    // เพิ่ม media ถ้ามี
-                    if (messageFormat.media) {
-                        payload.media = messageFormat.media;
+                for (let i = 1; i <= messageCount; i++) {
+                    const format = defaultFormats[messageType];
+                    if (!format) {
+                        showToast(`ไม่รองรับประเภทข้อความ ${messageType}`, 'error');
+                        return;
                     }
 
-                    const response = await fetch(`${API_BASE_URL}/api/oa/chat/send`, {
+                    const payload = format(i);
+                    console.log('Sending payload:', payload);
+
+                    const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2302,20 +2344,25 @@
                     });
 
                     const data = await response.json();
+                    console.log(`Message ${i} response:`, data);
+
                     if (data.statusCode !== "200") {
-                        showToast(`ส่งข้อความไม่สำเร็จ: ${data.message}`, 'error');
+                        showToast(`ส่งข้อความที่ ${i} ไม่สำเร็จ: ${data.message}`, 'error');
                         return;
                     }
 
-                    // อัพเดตความคืบหน้า
-                    updateProgressModal(i + 1, messageCount);
+                    // อัพเดท progress
+                    updateProgress(i, messageCount);
                 }
 
-                showToast('ส่งข้อความสำเร็จ', 'success');
+                showToast('ส่งข้อความทั้งหมดสำเร็จ', 'success');
+                hideProgressModal();
                 closeOAModal();
+
             } catch (error) {
                 console.error('Error in sendOAMessage:', error);
                 showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
+                hideProgressModal();
             }
         }
 
@@ -4364,17 +4411,27 @@ Response: ${JSON.stringify(log.response || log.error, null, 2)}
         function showOASendModal() {
             const modal = document.getElementById('oaSendModal');
             if (modal) {
-                // รีเซ็ตฟอร์ม
-                document.getElementById('accountName').value = '';
-                document.getElementById('messageType').value = 'TEXT';
-                document.getElementById('messageContent').value = '';
-                document.getElementById('mediaUrl').value = '';
-                document.getElementById('messageCount').value = '1';
-                
-                // แสดง/ซ่อนฟิลด์ตามประเภทข้อความ
-                handleMessageTypeChange();
-                
-                modal.style.display = 'flex';
+                try {
+                    // แสดง loading state
+                    showLoading();
+                    
+                    // รีเซ็ตฟอร์ม
+                    document.getElementById('accountName').value = '';
+                    document.getElementById('messageType').value = 'TEXT';
+                    document.getElementById('messageContent').value = '';
+                    document.getElementById('mediaUrl').value = '';
+                    document.getElementById('messageCount').value = '1';
+                    
+                    // แสดง/ซ่อนฟิลด์ตามประเภทข้อความ
+                    handleMessageTypeChange();
+                    
+                    modal.style.display = 'flex';
+                } catch (error) {
+                    console.error('Error in showOASendModal:', error);
+                    showToast('เกิดข้อผิดพลาดในการแสดง Modal', 'error');
+                } finally {
+                    hideLoading();
+                }
             }
         }
 
@@ -4389,13 +4446,174 @@ Response: ${JSON.stringify(log.response || log.error, null, 2)}
         // จัดการการเปลี่ยนประเภทข้อความ
         function handleMessageTypeChange() {
             const messageType = document.getElementById('messageType').value;
-            const textInput = document.getElementById('textMessageInput');
-            const mediaInput = document.getElementById('mediaMessageInput');
+            const messageContent = document.getElementById('messageContent');
+            const mediaUrl = document.getElementById('mediaUrl');
+            const counter = document.getElementById('messageCount').value || 1;
             
-            // ซ่อนทั้งช่องข้อความและช่อง media เพราะใช้ค่า default ทั้งหมด
-            textInput.style.display = 'none';
-            mediaInput.style.display = 'none';
+            // กำหนดค่าเริ่มต้นตามประเภทข้อความ
+            switch(messageType) {
+                case 'TEXT':
+                    messageContent.value = '';
+                    mediaUrl.value = '';
+                    break;
+                case 'IMAGE':
+                    messageContent.value = '';
+                    mediaUrl.value = `https://dummyimage.com/800x800/000/fff&text=Image${counter}`;
+                    break;
+                case 'VIDEO':
+                    messageContent.value = '';
+                    mediaUrl.value = `https://example.com/video${counter}.mp4`;
+                    break;
+                case 'MEDIA':
+                    messageContent.value = '';
+                    mediaUrl.value = `https://example.com/media${counter}`;
+                    break;
+                case 'FILE':
+                    messageContent.value = '';
+                    mediaUrl.value = `https://example.com/file${counter}.pdf`;
+                    break;
+            }
+        }
+
+        // เพิ่ม event listener เมื่อโหลดหน้า
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageTypeSelect = document.getElementById('messageType');
+            if (messageTypeSelect) {
+                messageTypeSelect.addEventListener('change', handleMessageTypeChange);
+                // เรียกใช้ฟังก์ชันครั้งแรกเพื่อตั้งค่าเริ่มต้น
+                handleMessageTypeChange();
+            }
+        });
+
+        // แสดง Modal ความคืบหน้า
+        function showProgressModal(current, total) {
+            const modal = document.createElement('div');
+            modal.id = 'progressModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                text-align: center;
+                min-width: 300px;
+            `;
+
+            const progressText = document.createElement('div');
+            progressText.id = 'progressText';
+            progressText.textContent = `กำลังส่งข้อความ ${current}/${total}`;
+            progressText.style.marginBottom = '10px';
+
+            const progressBar = document.createElement('div');
+            progressBar.style.cssText = `
+                width: 100%;
+                height: 20px;
+                background: #f0f0f0;
+                border-radius: 10px;
+                overflow: hidden;
+            `;
+
+            const progress = document.createElement('div');
+            progress.id = 'progressBar';
+            progress.style.cssText = `
+                width: ${(current / total) * 100}%;
+                height: 100%;
+                background: #1877f2;
+                transition: width 0.3s ease;
+            `;
+
+            progressBar.appendChild(progress);
+            content.appendChild(progressText);
+            content.appendChild(progressBar);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+
+        // อัพเดทความคืบหน้า
+        function updateProgress(current, total) {
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            if (progressText && progressBar) {
+                progressText.textContent = `กำลังส่งข้อความ ${current}/${total}`;
+                progressBar.style.width = `${(current / total) * 100}%`;
+            }
+        }
+
+        // ซ่อน Modal ความคืบหน้า
+        function hideProgressModal() {
+            const modal = document.getElementById('progressModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // แสดง Loading State
+        function showLoading() {
+            const loading = document.createElement('div');
+            loading.id = 'loadingOverlay';
+            loading.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            `;
+            
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 50px;
+                height: 50px;
+                border: 5px solid #f3f3f3;
+                border-top: 5px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            `;
+            
+            loading.appendChild(spinner);
+            document.body.appendChild(loading);
+        }
+
+        // ซ่อน Loading State
+        function hideLoading() {
+            const loading = document.getElementById('loadingOverlay');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        // เพิ่ม keyframes animation สำหรับ spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // เริ่มต้นแอปพลิเคชันเมื่อโหลดเสร็จ
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
         }
     </script>
 </body>
-</html> 
+</html>

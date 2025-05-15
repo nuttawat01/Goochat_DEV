@@ -725,10 +725,67 @@ function generateUUID() {
     });
 }
 
+// Function to format message payload
+function formatMessagePayload(payload) {
+    // Convert timestamp to microseconds (multiply by 1000000)
+    const now = new Date();
+    const timestamp = now.getTime() * 1000000;
+    
+    // Format date string YYYY-MM-DD HH:mm:ss
+    const dateStr = now.toISOString()
+        .replace('T', ' ')
+        .replace(/\.\d+Z$/, '');
+
+    // Format media object based on content type
+    let formattedMedia = [];
+    if (payload.media && Array.isArray(payload.media)) {
+        formattedMedia = payload.media.map((media, index) => {
+            const baseMedia = {
+                uploadId: media.uploadId || "",
+                id: media.id || crypto.randomUUID(),
+                mediaRefKey: media.mediaRefKey || crypto.randomUUID(),
+                imageSource: media.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
+                imageMedium: media.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
+                imageThumbnail: media.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
+                width: media.width || 800,
+                height: media.height || 800,
+                type: media.type || "IMAGE",
+                createdTime: media.createdTime || dateStr,
+                timeStamp: media.timeStamp || timestamp + (index * 1000000),
+                indexMedia: media.indexMedia || index
+            };
+
+            // Add video-specific fields if type is VIDEO
+            if (media.type === "VIDEO") {
+                baseMedia.expDate = media.expDate || (timestamp + (7 * 24 * 60 * 60 * 1000000));
+                baseMedia.duration = media.duration || 0;
+                baseMedia.originalContentUrl = media.originalContentUrl || "";
+            }
+
+            return baseMedia;
+        });
+    }
+
+    // Return formatted payload
+    return {
+        sessionId: payload.sessionId,
+        referenceKey: payload.referenceKey || crypto.randomUUID(),
+        contentType: payload.contentType || "TEXT",
+        status: payload.status || "WAITING",
+        content: payload.content || "",
+        destructTime: payload.destructTime || 0,
+        messagetimestamp: payload.messagetimestamp || timestamp,
+        oaId: payload.oaId,
+        createdTime: payload.createdTime || now.toISOString(),
+        updatedTime: payload.updatedTime || dateStr,
+        media: formattedMedia
+    };
+}
+
 // OA send message endpoint
 app.post('/api/oa/chat/send', async (req, res) => {
     try {
-        const { sessionId, contentType, content, media, oaId } = req.body;
+        const { sessionId, content = "", oaId, destructTime = 0, contentType = "TEXT", counter = 1 } = req.body;
         
         if (!sessionId || !oaId) {
             return res.status(400).json({
@@ -738,68 +795,40 @@ app.post('/api/oa/chat/send', async (req, res) => {
             });
         }
 
-        // สร้าง payload สำหรับส่งข้อความ
-        const messagePayload = {
-            sessionId,
-            oaId,  // เพิ่ม oaId ในการส่งข้อความ
-            referenceKey: crypto.randomUUID(),
-            contentType: contentType || "TEXT",
-            content: content || "",
-            destructTime: 0
-        };
+        // Format the message payload
+        const messagePayload = formatMessagePayload({
+            ...req.body,
+            messageNumber: counter
+        });
 
-        // เพิ่ม media ถ้ามีการส่งมา
-        if (media && Array.isArray(media)) {
-            messagePayload.media = media;
-        }
+        // Log payload before sending
+        console.log('Sending OA message payload:', JSON.stringify(messagePayload, null, 2));
 
-        // ตรวจสอบ Authorization header
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({
-                statusCode: "401",
-                message: "Invalid authorization header",
-                code: "4011"
-            });
-        }
-
-        const response = await axios.post('https://sit.apigoochat.net/gochat/v1/oa/chat/send',
-            messagePayload,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': authHeader,
-                    'App-Version': '1.9.0',
-                    'Os-Version': '12.0',
-                    'Accept-Language': 'en',
-                    'Platform': 'android',
-                    'Device-Id': crypto.randomUUID()
-                }
+        // Send the message
+        const response = await axios.post('https://sit.apigoochat.net/gochat/v1/chat/send', messagePayload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization,
+                'App-Version': req.headers['app-version'] || '1.9.0',
+                'Os-Version': req.headers['os-version'] || '12.0',
+                'Accept-Language': req.headers['accept-language'] || 'en',
+                'Platform': req.headers['platform'] || 'android',
+                'Device-Id': req.headers['device-id'] || crypto.randomUUID()
             }
-        );
-
-        // อัพเดท session timestamp
-        if (oaSessions.has(oaId)) {
-            const sessionData = oaSessions.get(oaId);
-            sessionData.lastMessageTime = new Date();
-            sessionData.lastStatus = response.data.statusCode;
-            oaSessions.set(oaId, sessionData);
-        }
+        });
 
         res.json(response.data);
     } catch (error) {
         console.error('Error sending OA message:', {
             message: error.message,
             response: error.response?.data,
-            status: error.response?.status,
-            headers: error.response?.headers
+            status: error.response?.status
         });
 
         res.status(error.response?.status || 500).json({
             statusCode: error.response?.data?.statusCode || "500",
-            message: error.response?.data?.message || error.message || 'Failed to send OA message',
-            code: error.response?.data?.code || "5001",
-            details: error.response?.data?.details || null
+            message: error.response?.data?.message || error.message || "Failed to send message",
+            code: error.response?.data?.code || "5001"
         });
     }
 });
