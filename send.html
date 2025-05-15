@@ -1924,6 +1924,7 @@
                             <option value="VIDEO">วิดีโอ</option>
                             <option value="MEDIA">มีเดีย</option>
                             <option value="FILE">ไฟล์</option>
+                            <option value="ALL">ส่งทุกประเภท</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -2319,13 +2320,17 @@
                     }
                 };
 
+                const typeList = ['TEXT', 'IMAGE', 'VIDEO', 'MEDIA', 'FILE'];
                 for (let i = 1; i <= messageCount; i++) {
-                    const format = defaultFormats[messageType];
+                    let typeToSend = messageType;
+                    if (messageType === 'ALL') {
+                        typeToSend = typeList[(i - 1) % typeList.length];
+                    }
+                    const format = defaultFormats[typeToSend];
                     if (!format) {
-                        showToast(`ไม่รองรับประเภทข้อความ ${messageType}`, 'error');
+                        showToast(`ไม่รองรับประเภทข้อความ ${typeToSend}`, 'error');
                         return;
                     }
-
                     const payload = format(i);
                     console.log('Sending payload:', payload);
 
