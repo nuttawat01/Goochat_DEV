@@ -21,8 +21,10 @@
     </script>
     <style>
         :root {
-            --primary-color: #1877f2;
-            --primary-hover: #166fe5;
+            --primary-color: #2A2A54;
+            --primary-hover: #23234a;
+            --primary-light: #3e4a89;
+            --primary-gradient: linear-gradient(135deg, #2A2A54 0%, #3e4a89 60%, #6a82fb 100%);
             --success-color: #42b72a;
             --error-color: #ff4d4f;
             --text-primary: #1c1e21;
@@ -30,8 +32,8 @@
             --bg-primary: #f0f2f5;
             --bg-secondary: #ffffff;
             --border-color: #dddfe2;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 1px 2px rgba(42,42,84,0.1);
+            --shadow-md: 0 2px 4px rgba(42,42,84,0.15);
             --transition: all 0.2s ease-in-out;
             --header-height: 80px;
         }
@@ -49,9 +51,10 @@
 
         body {
             font-family: 'Sarabun', sans-serif;
-            background-color: var(--bg-primary);
+            background: var(--primary-gradient);
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
         .header {
@@ -68,6 +71,7 @@
         .header h1 {
             color: var(--primary-color);
             margin: 0;
+            font-weight: 600;
         }
 
         .container {
@@ -103,7 +107,7 @@
         }
 
         .panel-header h2 {
-            color: var(--text-primary);
+            color: var(--primary-color);
             font-size: 26px;
             margin: 0;
             display: flex;
@@ -136,7 +140,7 @@
         }
 
         .room-list::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-hover);
+            background: var(--primary-light);
         }
 
         .room-item {
@@ -156,7 +160,7 @@
         }
 
         .room-item.selected {
-            background-color: rgba(24, 119, 242, 0.1);
+            background-color: rgba(42,42,84,0.1);
             border: 2px solid var(--primary-color);
         }
 
@@ -846,22 +850,76 @@
 
         .draft-item-actions {
             display: flex;
-            gap: 10px;
+            gap: 4px;  /* Reduced from 8px to 4px */
+        }
+
+        .draft-item-actions button {
+            padding: 4px 8px;  /* Reduced from 6px 12px to 4px 8px */
+            border: none;
+            border-radius: 4px;  /* Reduced from 6px to 4px */
+            font-size: 12px;  /* Reduced from 13px to 12px */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 2px;  /* Reduced from 4px to 2px */
+        }
+
+        .draft-item-actions .use-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .draft-item-actions .use-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .draft-item-actions .edit-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .draft-item-actions .edit-btn:hover {
+            background-color: #f57c00;
+            transform: translateY(-1px);
+        }
+
+        .draft-item-actions .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .draft-item-actions .delete-btn:hover {
+            background-color: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+        .draft-item-actions button:active {
+            transform: translateY(0);
         }
 
         .create-draft-btn {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
             color: white;
-            padding: 10px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
         }
 
         .create-draft-btn:hover {
-            background-color: var(--primary-hover);
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
         }
 
         .draft-form {
@@ -989,11 +1047,25 @@
         }
 
         .run-selected-btn {
-            transition: background-color 0.3s;
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
         }
 
         .run-selected-btn:hover {
-            background-color: #45a049 !important;
+            background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
         }
 
         .select-all-container {
@@ -1019,7 +1091,7 @@
         }
 
         .import-export-btn {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
             color: white;
             padding: 10px 20px;
             border: none;
@@ -1031,23 +1103,23 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(255, 152, 0, 0.2);
         }
 
         .import-export-btn:hover {
-            background-color: #1976D2;
+            background: linear-gradient(135deg, #F57C00 0%, #EF6C00 100%);
             transform: translateY(-2px);
-        }
-
-        .import-export-btn:active {
-            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
         }
 
         .import-export-btn.import {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            box-shadow: 0 2px 4px rgba(156, 39, 176, 0.2);
         }
 
         .import-export-btn.import:hover {
-            background-color: #388E3C;
+            background: linear-gradient(135deg, #7B1FA2 0%, #6A1B9A 100%);
+            box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
         }
 
         .hidden-file-input {
