@@ -431,7 +431,7 @@ app.post('/api/group/setting/create', upload.none(), async (req, res) => {
             });
 
             try {
-                currentOperation.textContent = `กำลังซื้อสติกเกอร์ให้สมาชิก ${i + 1}/${memberCount}`;
+                console.log(`กำลังซื้อสติกเกอร์ให้สมาชิก ${i + 1}/10`);
                 const purchaseResponse = await fetch('https://sit.apigoochat.net/gochat/v1/sticker/purchase', {
                     method: 'POST',
                     headers: {
