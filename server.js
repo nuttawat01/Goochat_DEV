@@ -526,7 +526,7 @@ app.post('/api/sticker/purchase', async (req, res) => {
                 'Msg-Version': '1'
             },
             body: JSON.stringify({
-                packageId: req.body.packageId
+                packageId: "651bdffda8dfd223058ccc7e"
             })
         });
 
