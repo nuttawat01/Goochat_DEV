@@ -166,11 +166,45 @@
         </form>
     </div>
     <script>
-        document.getElementById('phoneForm').addEventListener('submit', function(e) {
+        document.getElementById('phoneForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // สามารถเก็บเบอร์โทรไว้ใน localStorage ได้ถ้าต้องการ
-            // localStorage.setItem('mobile', document.getElementById('mobile').value.trim());
-            window.location.href = 'send.html';
+            const mobile = document.getElementById('mobile').value.trim();
+            
+            try {
+                // เรียก API เพื่อขอ token
+                const signInResponse = await fetch('https://goochat-dev.onrender.com/api/auth/email/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'App-Version': '1.9.0',
+                        'Os-Version': '12.0',
+                        'Accept-Language': 'en',
+                        'Platform': 'android',
+                        'Device-Id': crypto.randomUUID()
+                    },
+                    body: JSON.stringify({
+                        email: "ada@gmail.com",
+                        password: "2YkgPiDsG8cSizK8+ZSg9A=="
+                    })
+                });
+
+                const signInData = await signInResponse.json();
+                
+                if (signInData.statusCode !== "200") {
+                    alert(`เข้าสู่ระบบไม่สำเร็จ: ${signInData.message}`);
+                    return;
+                }
+
+                // เก็บ token และเบอร์โทรศัพท์
+                localStorage.setItem('accessToken', signInData.data.accessToken);
+                localStorage.setItem('mobile', mobile);
+                
+                // ไปที่หน้า send.html
+                window.location.href = 'send.html';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+            }
         });
     </script>
 </body>
