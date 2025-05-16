@@ -159,43 +159,76 @@
                 <label for="mobile">เบอร์โทรศัพท์</label>
                 <div class="input-wrapper">
                     <span class="input-icon"><i class="fa-solid fa-phone"></i></span>
-                    <input type="tel" id="mobile" name="mobile" placeholder="เช่น 0812345678" required pattern="0[0-9]{9}">
+                    <input type="tel" id="mobile" name="mobile" placeholder="เช่น 0812345678" required pattern="0[0-9]{9}" maxlength="10" oninput="validatePhoneNumber(this)">
                 </div>
             </div>
             <button type="submit">ยืนยัน</button>
         </form>
     </div>
     <script>
+        function validatePhoneNumber(input) {
+            // ลบตัวอักษรที่ไม่ใช่ตัวเลข
+            let value = input.value.replace(/[^0-9]/g, '');
+            
+            // ถ้าไม่มีเลข 0 นำหน้า และความยาวเท่ากับ 9 ให้เติม 0
+            if (value.length === 9 && value[0] !== '0') {
+                value = '0' + value;
+            }
+            
+            // จำกัดความยาวไม่เกิน 10 ตัว
+            value = value.substring(0, 10);
+            
+            // ตรวจสอบว่าต้องขึ้นต้นด้วย 0
+            if (value.length > 0 && value[0] !== '0') {
+                value = '0' + value.substring(0, 9);
+            }
+            
+            input.value = value;
+        }
+
         document.getElementById('phoneForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const mobile = document.getElementById('mobile').value.trim();
+            let mobile = document.getElementById('mobile').value.trim();
+            
+            // ตรวจสอบรูปแบบเบอร์โทรศัพท์อีกครั้ง
+            if (!mobile.match(/^0[0-9]{9}$/)) {
+                alert('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมี 10 หลัก)');
+                return;
+            }
+
+            // ตัดเลข 0 ออกก่อนส่ง API
+            const mobileForApi = mobile.substring(1);
             
             try {
-                // เรียก API เพื่อขอ token
-                const signInResponse = await fetch('https://goochat-dev.onrender.com/api/auth/email/signin', {
+                console.log('Sending mobile number (without leading zero):', mobileForApi); // log เพื่อตรวจสอบ
+                
+                // เรียก API เพื่อยืนยันเบอร์โทรศัพท์
+                const signInResponse = await fetch('https://goochat-dev.onrender.com/api/auth/otp/signup/verify', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'App-Version': '1.9.0',
-                        'Os-Version': '12.0',
-                        'Accept-Language': 'en',
-                        'Platform': 'android',
                         'Device-Id': crypto.randomUUID()
                     },
                     body: JSON.stringify({
-                        email: "ada@gmail.com",
-                        password: "2YkgPiDsG8cSizK8+ZSg9A=="
+                        countryCode: "TH",
+                        dialCode: "+66",
+                        mobile: mobileForApi, // ส่งเบอร์โทร 9 หลัก (ไม่มี 0 นำหน้า)
+                        code: "9549",
+                        referenceCode: "Test",
+                        acceptTermCondition: true,
+                        fcmToken: "newmsg"
                     })
                 });
 
                 const signInData = await signInResponse.json();
+                console.log('API Response:', signInData); // log เพื่อตรวจสอบ
                 
                 if (signInData.statusCode !== "200") {
-                    alert(`เข้าสู่ระบบไม่สำเร็จ: ${signInData.message}`);
+                    alert(`การยืนยันไม่สำเร็จ: ${signInData.message}`);
                     return;
                 }
 
-                // เก็บ token และเบอร์โทรศัพท์
+                // เก็บ token และเบอร์โทรศัพท์ (เก็บเบอร์เต็ม 10 หลักไว้ใช้ต่อ)
                 localStorage.setItem('accessToken', signInData.data.accessToken);
                 localStorage.setItem('mobile', mobile);
                 
@@ -203,7 +236,7 @@
                 window.location.href = 'send.html';
             } catch (error) {
                 console.error('Error:', error);
-                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                alert('เกิดข้อผิดพลาดในการยืนยันเบอร์โทรศัพท์');
             }
         });
     </script>

@@ -2096,7 +2096,14 @@
 
         // เพิ่มฟังก์ชัน createAndSendOA
         async function createAndSendOA() {
+            const sendButton = document.querySelector('#oaSendModal .modal-footer .send-btn');
+            const originalButtonText = sendButton.textContent;
+            showLoading();
             try {
+                // Disable button and show loading state
+                sendButton.disabled = true;
+                sendButton.textContent = 'กำลังดำเนินการ...';
+                
                 // ตรวจสอบข้อมูลที่จำเป็น
                 const accountName = document.getElementById('accountName').value.trim();
                 const messageType = document.getElementById('messageType').value;
@@ -2107,6 +2114,7 @@
                 }
 
                 // Sign in first to get token for OA operations
+                sendButton.textContent = 'กำลังเข้าสู่ระบบ...';
                 const signInResponse = await fetch(`${API_BASE_URL}/api/auth/email/signin`, {
                     method: 'POST',
                     headers: {
@@ -2139,6 +2147,7 @@
                 }
 
                 // สร้าง OA โดยใช้ token ของ OA
+                sendButton.textContent = 'กำลังสร้าง OA...';
                 const createResponse = await fetch(`${API_BASE_URL}/api/oa/create`, {
                     method: 'POST',
                     headers: {
@@ -2170,6 +2179,7 @@
                 showToast('สร้าง OA สำเร็จ', 'success');
 
                 // ส่ง friend request โดยใช้ token ของ user
+                sendButton.textContent = 'กำลังส่ง friend request...';
                 const userToken = localStorage.getItem('accessToken');
                 const requestResponse = await fetch(`${API_BASE_URL}/api/official/request`, {
                     method: 'POST',
@@ -2212,11 +2222,16 @@
                 showProgressModal(0, messageCount);
 
                 // ส่งข้อความ
+                sendButton.textContent = 'กำลังส่งข้อความ...';
                 await sendOAMessage(oaData);
 
             } catch (error) {
                 console.error('Error in createAndSendOA:', error);
                 showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = originalButtonText;
+                hideLoading();
             }
         }
 
@@ -2394,7 +2409,7 @@
 
                 const typeList = ['TEXT', 'IMAGE', 'VIDEO', 'MEDIA', 'FILE'];
                 let failedMessages = [];
-                showProgressModal(0, messageCount);
+                showProgressModal(0, messageCount); // ใช้ฟังก์ชันเดียวกับ batch send
 
                 for (let counter = 1; counter <= messageCount; counter++) {
                     let typeToSend = messageType;
@@ -2457,7 +2472,7 @@
                         }
                     }
 
-                    updateProgress(counter, messageCount);
+                    updateProgressModal(counter, messageCount); // ใช้ฟังก์ชันเดียวกับ batch send
                 }
 
                 if (failedMessages.length > 0) {
@@ -2471,7 +2486,7 @@
             } catch (error) {
                 console.error('Error in sendOAMessage:', error);
                 showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
-                hideProgressModal();
+                hideProgressModal(); // ให้ modal ถูกปิดเสมอ
             }
         }
 
