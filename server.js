@@ -813,6 +813,10 @@ function formatMessagePayload(payload) {
                 random1: random1,
                 random2: random2
             }];
+
+            // Set specific content for MEDIA type
+            payload.content = payload.content || `Media ${payload.messageNumber || 1}`;
+            payload.status = "WAITING";
             break;
 
         case 'FILE':
