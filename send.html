@@ -1715,7 +1715,7 @@
                         <div class="setting-title">ตั้งค่าความเร็วในการส่งข้อความ</div>
                         <label class="setting-option">
                             <input type="checkbox" id="useMessageDelay" checked>
-                            <span>ส่งข้อความแบบมีดีเลย์ (2 วินาที)</span>
+                            <span>ส่งข้อความแบบมีดีเลย์ (5 วินาที)</span>
                         </label>
                         <div class="setting-description">
                             <ul>
@@ -2217,10 +2217,6 @@
                     createdTime: requestData.data.userProfile.createdTime
                 };
 
-                // แสดง Modal ความคืบหน้า
-                const messageCount = parseInt(document.getElementById('messageCount').value) || 1;
-                showProgressModal(0, messageCount);
-
                 // ส่งข้อความ
                 sendButton.textContent = 'กำลังส่งข้อความ...';
                 await sendOAMessage(oaData);
@@ -2409,7 +2405,10 @@
 
                 const typeList = ['TEXT', 'IMAGE', 'VIDEO', 'MEDIA', 'FILE'];
                 let failedMessages = [];
-                showProgressModal(0, messageCount); // ใช้ฟังก์ชันเดียวกับ batch send
+                let progress = 0;
+                
+                // แสดง Modal ความคืบหน้า
+                showProgressModal(progress, messageCount);
 
                 for (let counter = 1; counter <= messageCount; counter++) {
                     let typeToSend = messageType;
@@ -2472,7 +2471,9 @@
                         }
                     }
 
-                    updateProgressModal(counter, messageCount); // ใช้ฟังก์ชันเดียวกับ batch send
+                    // อัพเดทความคืบหน้า
+                    progress++;
+                    updateProgressModal(progress, messageCount);
                 }
 
                 if (failedMessages.length > 0) {
@@ -2486,7 +2487,7 @@
             } catch (error) {
                 console.error('Error in sendOAMessage:', error);
                 showToast(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
-                hideProgressModal(); // ให้ modal ถูกปิดเสมอ
+                hideProgressModal();
             }
         }
 
@@ -2664,17 +2665,6 @@
             }
             modal.style.display = 'flex';
             updateProgressModal(progress, total);
-        }
-
-        // อัพเดตความคืบหน้าใน Modal
-        function updateProgressModal(progress, total) {
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            if (progressBar && progressText) {
-                const percentage = (progress / total) * 100;
-                progressBar.style.width = percentage + '%';
-                progressText.textContent = `${progress} / ${total}`;
-            }
         }
 
         function hideProgressModal() {
@@ -3154,7 +3144,7 @@
                                 updateProgressModal(progress, totalMessages);
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                 }
                                 messageCounter++;
                             } catch (error) {
@@ -3183,7 +3173,7 @@
                             messageCounter++;
 
                             if (useMessageDelay) {
-                                await new Promise(resolve => setTimeout(resolve, 0));
+                                await new Promise(resolve => setTimeout(resolve, 5000));
                             }
                         }
                     }
@@ -3224,7 +3214,7 @@
                                 }
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                 }
                             } catch (error) {
                                 console.error('Error pinning message:', error);
@@ -3272,7 +3262,7 @@
                                 }
                                 
                                 if (useMessageDelay) {
-                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                 }
                             } catch (error) {
                                 console.error('Error replying to message:', error);
@@ -3763,7 +3753,7 @@
                                             updateProgressModal(progress, totalMessages);
                                             
                                             if (useMessageDelay) {
-                                                await new Promise(resolve => setTimeout(resolve, 0));
+                                                await new Promise(resolve => setTimeout(resolve, 5000));
                                             }
                                             messageCounter++;
                                         } else {
@@ -3788,7 +3778,7 @@
                                             messageCounter++;
 
                                             if (useMessageDelay) {
-                                                await new Promise(resolve => setTimeout(resolve, 0));
+                                                await new Promise(resolve => setTimeout(resolve, 5000));
                                             }
                                         }
                                     }
@@ -3822,7 +3812,7 @@
                                                 console.log('Pin response:', pinData);
                                                 
                                                 if (useMessageDelay) {
-                                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                                 }
                                             } catch (error) {
                                                 console.error('Error pinning message:', error);
@@ -3864,7 +3854,7 @@
                                                 console.log('Reply response:', replyData);
                                                 
                                                 if (useMessageDelay) {
-                                                    await new Promise(resolve => setTimeout(resolve, 0));
+                                                    await new Promise(resolve => setTimeout(resolve, 5000));
                                                 }
                                             } catch (error) {
                                                 console.error('Error replying to message:', error);
@@ -4666,12 +4656,13 @@ Response: ${JSON.stringify(log.response || log.error, null, 2)}
         }
 
         // อัพเดทความคืบหน้า
-        function updateProgress(current, total) {
+        function updateProgressModal(current, total) {
             const progressText = document.getElementById('progressText');
             const progressBar = document.getElementById('progressBar');
             if (progressText && progressBar) {
+                const percentage = (current / total) * 100;
+                progressBar.style.width = `${percentage}%`;
                 progressText.textContent = `กำลังส่งข้อความ ${current}/${total}`;
-                progressBar.style.width = `${(current / total) * 100}%`;
             }
         }
 
