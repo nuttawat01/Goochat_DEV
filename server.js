@@ -793,26 +793,83 @@ function formatMessagePayload(payload) {
             break;
 
         case 'MEDIA':
-            const expDate = new Date();
-            expDate.setDate(expDate.getDate() + 7);
-            const expTimestamp = expDate.getTime() * 1000000;
-            const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
-            const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-            
-            formattedMedia = [{
-                uploadId: payload.media?.[0]?.uploadId || "",
-                id: payload.media?.[0]?.id || crypto.randomUUID(),
-                mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
-                mediaSource: payload.media?.[0]?.mediaSource || `https://example.com/media${payload.messageNumber || 1}`,
-                mediaThumbnail: payload.media?.[0]?.mediaThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
-                type: "MEDIA",
-                createdTime: dateStr,
-                timeStamp: timestamp,
-                indexMedia: payload.media?.[0]?.indexMedia || 0,
-                expDate: expTimestamp,
-                random1: random1,
-                random2: random2
-            }];
+    const expDate = new Date();
+    expDate.setDate(expDate.getDate() + 7);
+    const expTimestamp = expDate.getTime() * 1000000;
+    const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+    const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+    
+    // รองรับทั้ง format เดิมและ format ใหม่
+    if (payload.media && Array.isArray(payload.media)) {
+        formattedMedia = payload.media.map((media, index) => {
+            if (media.type === "IMAGE") {
+                return {
+                    uploadId: media.uploadId || "",
+                    id: media.id || crypto.randomUUID(),
+                    mediaRefKey: media.mediaRefKey || crypto.randomUUID(),
+                    imageSource: media.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    imageMedium: media.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    imageThumbnail: media.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    width: media.width || 225,
+                    height: media.height || 225,
+                    type: "IMAGE",
+                    createdTime: dateStr,
+                    timeStamp: timestamp + (index * 1000000),
+                    indexMedia: index
+                };
+            } else if (media.type === "VIDEO") {
+                return {
+                    uploadId: media.uploadId || "",
+                    id: media.id || crypto.randomUUID(),
+                    mediaRefKey: media.mediaRefKey || crypto.randomUUID(),
+                    imageSource: media.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    imageMedium: media.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    imageThumbnail: media.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    width: media.width || 1080,
+                    height: media.height || 1920,
+                    type: "VIDEO",
+                    createdTime: dateStr,
+                    timeStamp: timestamp + (index * 1000000),
+                    indexMedia: index,
+                    expDate: expTimestamp,
+                    duration: media.duration || 13129,
+                    originalContentUrl: media.originalContentUrl || `https://gochat-prod.s3.amazonaws.com/${payload.sessionId}/${random1}/${random2}.mp4`
+                };
+            } else {
+                // Default MEDIA format
+                return {
+                    uploadId: media.uploadId || "",
+                    id: media.id || crypto.randomUUID(),
+                    mediaRefKey: media.mediaRefKey || crypto.randomUUID(),
+                    mediaSource: media.mediaSource || `https://example.com/media${payload.messageNumber || 1}`,
+                    mediaThumbnail: media.mediaThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                    type: "MEDIA",
+                    createdTime: dateStr,
+                    timeStamp: timestamp + (index * 1000000),
+                    indexMedia: index,
+                    expDate: expTimestamp,
+                    random1: random1,
+                    random2: random2
+                };
+            }
+        });
+    } else {
+        // ถ้าไม่มี media array ใช้ format เดิม
+        formattedMedia = [{
+            uploadId: payload.media?.[0]?.uploadId || "",
+            id: payload.media?.[0]?.id || crypto.randomUUID(),
+            mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
+            mediaSource: payload.media?.[0]?.mediaSource || `https://example.com/media${payload.messageNumber || 1}`,
+            mediaThumbnail: payload.media?.[0]?.mediaThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+            type: "MEDIA",
+            createdTime: dateStr,
+            timeStamp: timestamp,
+            indexMedia: 0,
+            expDate: expTimestamp,
+            random1: random1,
+            random2: random2
+        }];
+    };
 
             // Set specific content for MEDIA type
             payload.content = payload.content || `Media ${payload.messageNumber || 1}`;

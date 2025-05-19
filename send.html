@@ -2705,8 +2705,13 @@
 
         // ฟังก์ชันสำหรับส่งข้อความ
         window.sendMessage = async function(room, type, counterMessage, accessToken, destructTime, currentSequence, skipDestructTimeSequence) {
-            const headers = {
-                'Content-Type': 'application/json',
+              if (type === "ALL") {
+                  const types = ["TEXT", "IMAGE", "VIDEO", "MEDIA", "FILE"];
+                  const typeIndex = (parseInt(counterMessage) - 1) % types.length;
+                  type = types[typeIndex];
+              }
+              const headers = {
+                  'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
                 'App-Version': '1.9.0',
                 'Os-Version': '12.0',
