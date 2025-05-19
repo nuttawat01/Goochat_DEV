@@ -2242,11 +2242,11 @@
 
                 // กำหนด default media URL และ payload format สำหรับแต่ละประเภท
                 const defaultFormats = {
-                    TEXT: (counter) => ({
+                    TEXT: (messageCounter) => ({
                         sessionId: oaData.sessionId,
                         referenceKey: crypto.randomUUID(),
                         contentType: 'TEXT',
-                        content: `${counter}`,
+                                                    content: `${messageCounter}`,
                         destructTime: 0,
                         isMeSending: true,
                         oaId: oaData.id,
@@ -2256,14 +2256,14 @@
                         createdTime: new Date().toISOString(),
                         updatedTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')
                     }),
-                    IMAGE: (counter) => {
+                    IMAGE: (messageCounter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
                         return {
                             sessionId: oaData.sessionId,
                             referenceKey: crypto.randomUUID(),
                             contentType: "IMAGE",
-                            content: `Image ${counter}`,
+                            content: `Image ${messageCounter}`,
                             destructTime: 0,
                             messagetimestamp: timestamp,
                             oaId: oaData.id,
@@ -2276,9 +2276,9 @@
                                 uploadId: "",
                                 id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
-                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
                                 width: 600,
                                 height: 400,
                                 type: "IMAGE",
@@ -2288,14 +2288,14 @@
                             }]
                         };
                     },
-                    VIDEO: (counter) => {
+                    VIDEO: (messageCounter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
                         return {
                             sessionId: oaData.sessionId,
                             referenceKey: crypto.randomUUID(),
                             contentType: "VIDEO",
-                            content: `Video ${counter}`,
+                            content: `Video ${messageCounter}`,
                             destructTime: 0,
                             messagetimestamp: timestamp,
                             oaId: oaData.id,
@@ -2308,11 +2308,11 @@
                                 uploadId: "",
                                 id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
-                                videoSource: `https://example.com/video${counter}.mp4`,
-                                videoThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                videoSource: `https://example.com/video${messageCounter}.mp4`,
+                                videoThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
                                 duration: 30,
                                 width: 600,
                                 height: 400,
@@ -2323,7 +2323,7 @@
                             }]
                         };
                     },
-                    MEDIA: (counter) => {
+                    MEDIA: (messageCounter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
                         const expDate = new Date();
@@ -2336,7 +2336,7 @@
                             referenceKey: crypto.randomUUID(),
                             contentType: "MEDIA",
                             status: "WAITING",
-                            content: `Media ${counter}`,
+                            content: `Media ${messageCounter}`,
                             destructTime: 0,
                             messagetimestamp: timestamp,
                             oaId: oaData.id,
@@ -2350,9 +2350,9 @@
                                     uploadId: "",
                                     id: crypto.randomUUID(),
                                     mediaRefKey: crypto.randomUUID(),
-                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
                                     width: 225,
                                     height: 225,
                                     type: "IMAGE",
@@ -2364,9 +2364,9 @@
                                     uploadId: "",
                                     id: crypto.randomUUID(),
                                     mediaRefKey: crypto.randomUUID(),
-                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
-                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${counter}`,
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
                                     width: 1080,
                                     height: 1920,
                                     type: "VIDEO",
@@ -2380,7 +2380,7 @@
                             ]
                         };
                     },
-                    FILE: (counter) => {
+                    FILE: (messageCounter) => {
                         const timestamp = Date.now() * 1000000;
                         const dateStr = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
                         const expDate = new Date();
@@ -2391,7 +2391,7 @@
                             referenceKey: crypto.randomUUID(),
                             contentType: "FILE",
                             status: "WAITING",
-                            content: `File ${counter}`,
+                            content: `File ${messageCounter}`,
                             destructTime: 0,
                             messagetimestamp: timestamp,
                             oaId: oaData.id,
@@ -2404,8 +2404,8 @@
                                 uploadId: "",
                                 id: crypto.randomUUID(),
                                 mediaRefKey: crypto.randomUUID(),
-                                fileSource: `https://example.com/file${counter}.pdf`,
-                                fileName: `file_${counter}.zip`,
+                                fileSource: `https://example.com/file${messageCounter}.pdf`,
+                                fileName: `file_${messageCounter}.zip`,
                                 fileExtension: ".zip",
                                 fileSize: 110752,
                                 type: "FILE",
@@ -2423,19 +2423,21 @@
                 let progress = 0;
                 
                 // แสดง Modal ความคืบหน้า
+                const actualMessageCount = sendBackToOA ? Math.ceil(messageCount / 2) : messageCount; // แบ่งครึ่งเมื่อมีการส่งกลับ
                 showProgressModal(progress, messageCount);
 
-                for (let counter = 1; counter <= messageCount; counter++) {
+                let messageCounter = 1;
+                for (let i = 1; i <= actualMessageCount; i++) {
                     let typeToSend = messageType;
                     if (messageType === 'ALL') {
-                        typeToSend = typeList[(counter - 1) % typeList.length];
+                        typeToSend = typeList[(i - 1) % typeList.length];
                     }
                     const format = defaultFormats[typeToSend];
                     if (!format) {
                         showToast(`ไม่รองรับประเภทข้อความ ${typeToSend}`, 'error');
                         continue;
                     }
-                    const payload = format(counter);
+                    const payload = format(messageCounter);
                     try {
                         // OA ยิงหาเรา
                         const response = await fetch(`${API_BASE_URL}/api/oa/chat/send`, {
@@ -2453,16 +2455,123 @@
                         });
                         const data = await response.json();
                         if (data.statusCode !== "200") {
-                            failedMessages.push(`OA ส่งข้อความที่ ${counter} ไม่สำเร็จ: ${data.message}`);
+                            failedMessages.push(`OA ส่งข้อความที่ ${messageCounter} ไม่สำเร็จ: ${data.message}`);
                         }
                     } catch (error) {
-                        failedMessages.push(`OA ส่งข้อความที่ ${counter} เกิดข้อผิดพลาด: ${error.message}`);
+                        failedMessages.push(`OA ส่งข้อความที่ ${messageCounter} เกิดข้อผิดพลาด: ${error.message}`);
                     }
+
+                    progress++; // เพิ่มความคืบหน้าหลัง OA ส่งข้อความ
+                    updateProgressModal(progress, messageCount);
+                    messageCounter++; // เพิ่ม counter หลังจาก OA ส่ง
 
                     // เรายิงกลับหา OA (ถ้าเลือก)
                     if (sendBackToOA) {
-                        let backPayload = { ...payload, content: `[กลับหา OA] ${typeToSend} message ${counter}` };
+                        // สร้าง payload สำหรับ user ส่งกลับ OA
                         const userToken = localStorage.getItem('accessToken');
+                        const userPayload = {
+                            sessionId: payload.sessionId,
+                            referenceKey: crypto.randomUUID(),
+                            contentType: typeToSend,
+                            status: "WAITING",
+                            content: `${typeToSend} message ${messageCounter}`,
+                            destructTime: payload.destructTime || 0,
+                            messagetimestamp: Date.now() * 1000000
+                        };
+
+                        // จัดการ media ตาม content type
+                        if (typeToSend === 'IMAGE') {
+                            userPayload.media = [{
+                                uploadId: "",
+                                id: crypto.randomUUID(),
+                                mediaRefKey: crypto.randomUUID(),
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                width: 600,
+                                height: 400,
+                                type: "IMAGE",
+                                createdTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+                                timeStamp: userPayload.messagetimestamp,
+                                indexMedia: 0
+                            }];
+                        } else if (typeToSend === 'VIDEO') {
+                            userPayload.media = [{
+                                uploadId: "",
+                                id: crypto.randomUUID(),
+                                mediaRefKey: crypto.randomUUID(),
+                                videoSource: `https://example.com/video${messageCounter}.mp4`,
+                                videoThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                duration: 30,
+                                width: 600,
+                                height: 400,
+                                type: "VIDEO",
+                                createdTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+                                timeStamp: userPayload.messagetimestamp,
+                                indexMedia: 0
+                            }];
+                        } else if (typeToSend === 'MEDIA') {
+                            const expDate = new Date();
+                            expDate.setDate(expDate.getDate() + 7);
+                            const expTimestamp = expDate.getTime() * 1000000;
+                            const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+                            const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+                            userPayload.media = [
+                                {
+                                    uploadId: "",
+                                    id: crypto.randomUUID(),
+                                    mediaRefKey: crypto.randomUUID(),
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    width: 225,
+                                    height: 225,
+                                    type: "IMAGE",
+                                    createdTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+                                    timeStamp: userPayload.messagetimestamp + 1000000,
+                                    indexMedia: 0
+                                },
+                                {
+                                    uploadId: "",
+                                    id: crypto.randomUUID(),
+                                    mediaRefKey: crypto.randomUUID(),
+                                    imageSource: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageMedium: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    imageThumbnail: `https://dummyimage.com/600x400/000/fff&text=${messageCounter}`,
+                                    width: 1080,
+                                    height: 1920,
+                                    type: "VIDEO",
+                                    createdTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+                                    timeStamp: userPayload.messagetimestamp + 5000000,
+                                    indexMedia: 1,
+                                    expDate: expTimestamp,
+                                    duration: 13129,
+                                    originalContentUrl: `https://gochat-prod.s3.amazonaws.com/${userPayload.sessionId}/${random1}/${random2}.mp4`
+                                }
+                            ];
+                        } else if (typeToSend === 'FILE') {
+                            const expDate = new Date();
+                            expDate.setDate(expDate.getDate() + 7);
+                            const expTimestamp = expDate.getTime() * 1000000;
+                            userPayload.media = [{
+                                uploadId: "",
+                                id: crypto.randomUUID(),
+                                mediaRefKey: crypto.randomUUID(),
+                                fileSource: `https://example.com/file${messageCounter}.pdf`,
+                                fileName: `file_${messageCounter}.zip`,
+                                fileExtension: ".zip",
+                                fileSize: 110752,
+                                type: "FILE",
+                                createdTime: new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''),
+                                timeStamp: userPayload.messagetimestamp,
+                                indexMedia: 0,
+                                expDate: expTimestamp
+                            }];
+                        }
+
                         try {
                             const backResponse = await fetch(`${API_BASE_URL}/api/chat/send`, {
                                 method: 'POST',
@@ -2475,20 +2584,20 @@
                                     'Platform': 'android',
                                     'Device-Id': crypto.randomUUID()
                                 },
-                                body: JSON.stringify(backPayload)
+                                body: JSON.stringify(userPayload)
                             });
                             const backData = await backResponse.json();
                             if (backData.statusCode !== "200") {
-                                failedMessages.push(`เราส่งข้อความกลับที่ ${counter} ไม่สำเร็จ: ${backData.message}`);
+                                failedMessages.push(`เราส่งข้อความกลับที่ ${messageCounter} ไม่สำเร็จ: ${backData.message}`);
                             }
                         } catch (error) {
-                            failedMessages.push(`เราส่งข้อความกลับที่ ${counter} เกิดข้อผิดพลาด: ${error.message}`);
+                            failedMessages.push(`เราส่งข้อความกลับที่ ${messageCounter} เกิดข้อผิดพลาด: ${error.message}`);
                         }
-                    }
 
-                    // อัพเดทความคืบหน้า
-                    progress++;
-                    updateProgressModal(progress, messageCount);
+                        progress++; // เพิ่มความคืบหน้าหลังเราส่งข้อความกลับ
+                        updateProgressModal(progress, messageCount);
+                        messageCounter++; // เพิ่ม counter หลังจากเราส่งกลับ
+                    }
                 }
 
                 if (failedMessages.length > 0) {
@@ -2594,8 +2703,8 @@
                     // Get selected mock groups
                     const selectedMockGroups = Array.from(document.querySelectorAll('#roomSelection input[type="checkbox"]:checked'))
                         .filter(checkbox => checkbox.dataset.isMock === 'true')
-                        .map(checkbox => checkbox.value);
-                    
+                    .map(checkbox => checkbox.value);
+
                     // Get members from the first selected mock group
                     if (selectedMockGroups.length > 0) {
                         const mockMembers = getMockMemberTokens(selectedMockGroups[0]);
@@ -3047,10 +3156,10 @@
 
         async function sendBatchMessages() {
             const selectedRooms = getSelectedRooms();
-            if (selectedRooms.length === 0) {
+                if (selectedRooms.length === 0) {
                 alert('กรุณาเลือกห้องที่ต้องการส่งข้อความ');
-                return;
-            }
+                    return;
+                }
 
             const contentType = document.getElementById('batchContentType').value;
             const messageCount = parseInt(document.getElementById('batchMessageCount').value);
@@ -3079,13 +3188,13 @@
                 totalMessages
             });
 
-            let progress = 0;
+                let progress = 0;
             showProgressModal(progress, totalMessages);
 
             try {
                 for (const room of selectedRooms) {
                     console.log(`Processing room: ${room.sessionId}`);
-                    let messageCounter = 1;
+                let messageCounter = 1;
                     let currentSequence = 0;
                     const messagesToPin = [];
                     const messagesToReply = [];
@@ -3166,7 +3275,7 @@
                                 if (useMessageDelay) {
                                     await new Promise(resolve => setTimeout(resolve, 5000));
                                 }
-                                messageCounter++;
+                            messageCounter++;
                             } catch (error) {
                                 console.error('Error in ALL message sequence:', error);
                                 messageCounter++;
@@ -3207,8 +3316,8 @@
                                 console.log(`Attempting to pin message: ${msgToPin.messageId} with token: ${msgToPin.token.substring(0, 20)}...`);
                                 
                                 const pinResponse = await fetch('https://goochat-dev.onrender.com/api/chat/pin', {
-                                    method: 'POST',
-                                    headers: {
+                                method: 'POST',
+                                headers: {
                                         'Content-Type': 'application/json',
                                         'Authorization': `Bearer ${msgToPin.token}`,
                                         'App-Version': '1.9.0',
