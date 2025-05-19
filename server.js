@@ -744,46 +744,105 @@ function generateUUID() {
 
 // Function to format message payload
 function formatMessagePayload(payload) {
-    // Convert timestamp to microseconds (multiply by 1000000)
     const now = new Date();
     const timestamp = now.getTime() * 1000000;
-    
-    // Format date string YYYY-MM-DD HH:mm:ss
-    const dateStr = now.toISOString()
-        .replace('T', ' ')
-        .replace(/\.\d+Z$/, '');
-
-    // Format media object based on content type
+    const dateStr = now.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
     let formattedMedia = [];
-    if (payload.media && Array.isArray(payload.media)) {
-        formattedMedia = payload.media.map((media, index) => {
-            const baseMedia = {
-                uploadId: media.uploadId || "",
-                id: media.id || crypto.randomUUID(),
-                mediaRefKey: media.mediaRefKey || crypto.randomUUID(),
-                imageSource: media.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
-                imageMedium: media.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
-                imageThumbnail: media.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || (index + 1)}`,
-                width: media.width || 800,
-                height: media.height || 800,
-                type: media.type || "IMAGE",
-                createdTime: media.createdTime || dateStr,
-                timeStamp: media.timeStamp || timestamp + (index * 1000000),
-                indexMedia: media.indexMedia || index
-            };
 
-            // Add video-specific fields if type is VIDEO
-            if (media.type === "VIDEO") {
-                baseMedia.expDate = media.expDate || (timestamp + (7 * 24 * 60 * 60 * 1000000));
-                baseMedia.duration = media.duration || 0;
-                baseMedia.originalContentUrl = media.originalContentUrl || "";
-            }
+    // Handle different content types
+    switch (payload.contentType) {
+        case 'TEXT':
+            // Text messages don't need media
+            break;
 
-            return baseMedia;
-        });
+        case 'IMAGE':
+            formattedMedia = [{
+                uploadId: payload.media?.[0]?.uploadId || "",
+                id: payload.media?.[0]?.id || crypto.randomUUID(),
+                mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
+                imageSource: payload.media?.[0]?.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                imageMedium: payload.media?.[0]?.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                imageThumbnail: payload.media?.[0]?.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                width: payload.media?.[0]?.width || 600,
+                height: payload.media?.[0]?.height || 400,
+                type: "IMAGE",
+                createdTime: dateStr,
+                timeStamp: timestamp,
+                indexMedia: payload.media?.[0]?.indexMedia || 0
+            }];
+            break;
+
+        case 'VIDEO':
+            formattedMedia = [{
+                uploadId: payload.media?.[0]?.uploadId || "",
+                id: payload.media?.[0]?.id || crypto.randomUUID(),
+                mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
+                videoSource: payload.media?.[0]?.videoSource || `https://example.com/video${payload.messageNumber || 1}.mp4`,
+                videoThumbnail: payload.media?.[0]?.videoThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                imageSource: payload.media?.[0]?.imageSource || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                imageMedium: payload.media?.[0]?.imageMedium || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                imageThumbnail: payload.media?.[0]?.imageThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                duration: payload.media?.[0]?.duration || 30,
+                width: payload.media?.[0]?.width || 600,
+                height: payload.media?.[0]?.height || 400,
+                type: "VIDEO",
+                createdTime: dateStr,
+                timeStamp: timestamp,
+                indexMedia: payload.media?.[0]?.indexMedia || 0
+            }];
+            break;
+
+        case 'MEDIA':
+            const expDate = new Date();
+            expDate.setDate(expDate.getDate() + 7);
+            const expTimestamp = expDate.getTime() * 1000000;
+            const random1 = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+            const random2 = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+            
+            formattedMedia = [{
+                uploadId: payload.media?.[0]?.uploadId || "",
+                id: payload.media?.[0]?.id || crypto.randomUUID(),
+                mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
+                mediaSource: payload.media?.[0]?.mediaSource || `https://example.com/media${payload.messageNumber || 1}`,
+                mediaThumbnail: payload.media?.[0]?.mediaThumbnail || `https://dummyimage.com/600x400/000/fff&text=${payload.messageNumber || 1}`,
+                type: "MEDIA",
+                createdTime: dateStr,
+                timeStamp: timestamp,
+                indexMedia: payload.media?.[0]?.indexMedia || 0,
+                expDate: expTimestamp,
+                random1: random1,
+                random2: random2
+            }];
+            break;
+
+        case 'FILE':
+            const fileExpDate = new Date();
+            fileExpDate.setDate(fileExpDate.getDate() + 7);
+            const fileExpTimestamp = fileExpDate.getTime() * 1000000;
+            
+            formattedMedia = [{
+                uploadId: payload.media?.[0]?.uploadId || "",
+                id: payload.media?.[0]?.id || crypto.randomUUID(),
+                mediaRefKey: payload.media?.[0]?.mediaRefKey || crypto.randomUUID(),
+                fileSource: payload.media?.[0]?.fileSource || `https://example.com/file${payload.messageNumber || 1}.pdf`,
+                fileName: payload.media?.[0]?.fileName || `file_${payload.messageNumber || 1}.pdf`,
+                fileExtension: payload.media?.[0]?.fileExtension || ".pdf",
+                fileSize: payload.media?.[0]?.fileSize || 110752,
+                type: "FILE",
+                createdTime: dateStr,
+                timeStamp: timestamp,
+                indexMedia: payload.media?.[0]?.indexMedia || 0,
+                expDate: fileExpTimestamp
+            }];
+            break;
+
+        default:
+            // Handle unknown content type as TEXT
+            console.warn(`Unknown content type: ${payload.contentType}, treating as TEXT`);
+            break;
     }
 
-    // Return formatted payload
+    // Return formatted payload with all necessary fields
     return {
         sessionId: payload.sessionId,
         referenceKey: payload.referenceKey || crypto.randomUUID(),
@@ -793,6 +852,8 @@ function formatMessagePayload(payload) {
         destructTime: payload.destructTime || 0,
         messagetimestamp: payload.messagetimestamp || timestamp,
         oaId: payload.oaId,
+        senderId: payload.senderId,
+        mode: payload.mode || "OFFICIAL",
         createdTime: payload.createdTime || now.toISOString(),
         updatedTime: payload.updatedTime || dateStr,
         media: formattedMedia
