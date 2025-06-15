@@ -454,7 +454,7 @@ app.post('/api/group/setting/create', upload.none(), async (req, res) => {
                 console.error(`Error purchasing sticker for member ${phone}:`, purchaseError);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 0));
         }
     } catch (error) {
         console.error('Error details:', {
