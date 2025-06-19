@@ -640,7 +640,7 @@ let oaSessions = new Map();
 // Friend request to OA endpoint
 app.post('/api/contact/friend/request', async (req, res) => {
     try {
-        const oaId = req.body.oaId || req.query.oaId; // รับ OA ID จาก body หรือ query parameter
+        const id = req.body.id || req.query.id; // รับ ID จาก body หรือ query parameter
         
         const response = await axios.post('https://sit.apigoochat.net/gochat/v1/contact/friend/request', 
             {
@@ -663,13 +663,13 @@ app.post('/api/contact/friend/request', async (req, res) => {
 
         // ถ้ามี sessionId ในการตอบกลับ เก็บไว้ใน Map
         if (response.data && response.data.data && response.data.data.sessionId) {
-            oaSessions.set(oaId, {
+            oaSessions.set(id, {
                 sessionId: response.data.data.sessionId,
                 timestamp: new Date(),
                 status: 'active'
             });
             
-            console.log(`Stored sessionId for OA ${oaId}:`, response.data.data.sessionId);
+            console.log(`Stored sessionId for ID ${id}:`, response.data.data.sessionId);
         }
 
         res.json(response.data);
