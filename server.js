@@ -644,7 +644,7 @@ app.post('/api/contact/friend/request', async (req, res) => {
         
         const response = await axios.post('https://sit.apigoochat.net/gochat/v1/contact/friend/request', 
             {
-                id: oaId,
+                id: id,
                 addedFrom: "ID"
             },
             {
